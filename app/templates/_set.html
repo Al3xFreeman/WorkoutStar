@@ -1,0 +1,11 @@
+<table class="table table-hover">
+    <tr>
+
+        <td>
+
+            Set id: {{ set.id }} <br>
+            {% if weight is not none %} Weight: {{ set.weight }} Kg. <br>{% endif %}
+            {% if reps is not none %} Reps: {{ set.reps }}.<br> {% endif %}
+        </td>
+    </tr>
+</table>

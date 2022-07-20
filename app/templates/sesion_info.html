@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+
+    <h1>Info for session with ID: {{ sesion.id }}</h1><br><br>
+
+    <a href="{{ url_for('main.explore_sesions') }}">Back to all sesions</a>
+
+    {% if form %}
+    {{ wtf.quick_form(form) }}
+    <br>
+    {% endif %}
+
+    <div> Date performed: {{ sesion.date }}</div><br>
+    {% if sesion.due_date %}
+    <div> Due date for this sesion: {{ sesion.due_date }} </div><br>
+    {% endif %}
+
+    <div> 
+        <a href="{{ url_for('main.sesion_exercises', sesion_id=sesion.id) }}">{{ sesion.exercises.count() }} exercises in this sesion</a>
+    </div>
+
+
+{% endblock %}

@@ -1,0 +1,17 @@
+<table class="table table-hover">
+    <tr>
+        <td>
+            Exercise id: {{ exercise.id }}<br>
+        </td>
+        <td>            
+            Name: {{ exercise.name }}<br>
+            Done? {% if exercise.done %} YES {% else %} NO {% endif %}<br>
+            {% if exercise.duration %} Exercise duration: {{ exercise.duration }} {% endif %}<br>
+            {% if exercise.timestamp %} Performed at: {{ exercise.timestamp }} {% endif %}<br>
+            {% for set in sets %}
+                {% include "_set.html" %}
+            {% endfor %}
+        </td>
+        
+    </tr>
+</table>
