@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+
+    <table>
+        <tr>
+            <td>
+                <a href="{{ url_for('main.explore_sesions') }}"> Lista de todas las sesiones </a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <a href="{{ url_for('main.explore_routines') }}"> Lista de todas las rutinas </a>
+            </td>
+        </tr>
+    </table>
+
+{% endblock %}
