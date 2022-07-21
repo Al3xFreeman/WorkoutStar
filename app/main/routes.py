@@ -2,7 +2,7 @@ from datetime import datetime
 from turtle import title
 from flask import current_app, render_template, flash, redirect, url_for, request, jsonify
 from flask_login import login_required, current_user
-from app.main.forms import EditProfileForm, EmptyForm, ExerciseForm, PostForm
+from app.main.forms import EditProfileForm, EmptyForm, ExerciseForm, PostForm, SesionForm
 from app import db
 from app.main import bp
 from app.models import Exercise, Routine, Sesion, User
@@ -43,7 +43,7 @@ def explore():
     return render_template("explore.html", title='Explore sesions')
 
 
-@bp.route('/explore/sesions')
+@bp.route('/explore/sesions', methods=['GET', 'POST'])
 @login_required
 def explore_sesions():
     page = request.args.get('page', 1, type=int)
@@ -52,8 +52,16 @@ def explore_sesions():
     #prev_url = url_for('main.explore', page=posts.prev_num) if posts.has_prev else None
 
     #return render_template("index.html", title='Explore', posts=posts.items, next_url=next_url, prev_url=prev_url)
+    form = SesionForm(date=datetime.now())
+    if form.validate_on_submit():
+        sesion = Sesion(user=current_user, date=form.date.data, due_time=form.due_time.data)
+        db.session.add(sesion)
+        db.session.commit()
+        flash('Your sesion has been successfully added')
+        return redirect(url_for('main.explore_sesions'))
+
     sesions = Sesion.query.order_by(Sesion.date.desc()).all()
-    return render_template("all_sesions.html", title='Explore sesions', sesions=sesions)
+    return render_template("all_sesions.html", title='Explore sesions', sesions=sesions, form=form)
 
 @bp.route('/explore/sesions/<routine_id>')
 def sesions_in_routine(routine_id):

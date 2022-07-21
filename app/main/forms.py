@@ -2,8 +2,8 @@ from xmlrpc.client import DateTime
 from flask import request
 from flask_wtf import FlaskForm
 from sqlalchemy import Integer
-from wtforms import StringField, SubmitField, TextAreaField, IntegerField, DateTimeField
-from wtforms.validators import DataRequired, ValidationError, Length
+from wtforms import StringField, SubmitField, TextAreaField, IntegerField, DateTimeField, DateField
+from wtforms.validators import DataRequired, ValidationError, Length, Optional
 from app.models import User
 
 
@@ -42,8 +42,8 @@ class SetForm(FlaskForm):
     submit = SubmitField('Submit')
 
 class SesionForm(FlaskForm):
-    date = DateTimeField('Date Performed', validators=[])
-    due_time = DateTimeField('Due Date')
+    date = DateField('Date Performed (Default: now)', validators=[Optional()])
+    due_time = DateField('Due Date (Optional)', validators=[Optional()])
     submit = SubmitField('Submit')
 
 class RoutineForm(FlaskForm):
