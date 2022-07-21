@@ -1,0 +1,25 @@
+    <table class="table table-hover">
+        <tr>
+            <td width="70px">
+                <a href="{{ url_for('main.user', username=routine.user.username) }}">
+                    <img src="{{ routine.user.avatar(70) }}" />
+                </a>
+            </td>
+            <td>
+                {% set user_link %}
+                    <a href="{{ url_for('main.user', username=routine.user.username) }}">
+                        {{ routine.user.username }}
+                    </a>
+                {% endset %}
+
+                <br>
+
+                <span id="post{{ routine.id }}">{{ routine.id }}</span>
+                The routine has {{ routine.sesions.count() }} sesions programmed: 
+                <a href="{{ url_for('main.sesions_in_routine', routine_id=routine.id) }}">Sesions list</a>
+                
+                
+            </td>
+
+        </tr>
+    </table>

@@ -7,6 +7,12 @@
     {{ wtf.quick_form(form) }}
     <br>
     {% endif %}
+
+    {% if routine_id %}
+    <h2>Sesions in routine ID: {{ routine_id }}</h2>
+    <a href="{{ url_for('main.explore_routines', routine_id = routine_id) }}">Back to routine list</a>
+    {% endif %}
+
     {% for sesion in sesions %}
         {% include '_sesion.html' %}
     {% endfor %}

@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 from app.main.forms import EditProfileForm, EmptyForm, ExerciseForm, PostForm
 from app import db
 from app.main import bp
-from app.models import Exercise, Sesion, User
+from app.models import Exercise, Routine, Sesion, User
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
@@ -40,7 +40,7 @@ def explore():
 
     #return render_template("index.html", title='Explore', posts=posts.items, next_url=next_url, prev_url=prev_url)
     sesions = Sesion.query.order_by(Sesion.date.desc()).all()
-    return render_template("all_sesions.html", title='Explore sesions', sesions=sesions)
+    return render_template("explore.html", title='Explore sesions')
 
 
 @bp.route('/explore/sesions')
@@ -55,8 +55,23 @@ def explore_sesions():
     sesions = Sesion.query.order_by(Sesion.date.desc()).all()
     return render_template("all_sesions.html", title='Explore sesions', sesions=sesions)
 
+@bp.route('/explore/sesions/<routine_id>')
+def sesions_in_routine(routine_id):
+    sesions = Routine.query.get_or_404(routine_id).sesions.all()
+    return render_template("all_sesions.html", sesions = sesions, routine_id=routine_id)
 
-@bp.route('/sesion/<sesion_id>', methods=['GET', 'POST'])
+@bp.route('/explore/routines')
+def explore_routines():
+    routines = Routine.query.order_by(Routine.user_id.asc()).all()
+    return render_template("all_routines.html", routines = routines)
+
+@bp.route('/routines/<routine_id>')
+def routine(routine_id):
+    routine = Routine.query.get_or_404(routine_id)
+
+    return render_template('routine_info.html')
+
+@bp.route('/sesions/<sesion_id>', methods=['GET', 'POST'])
 def sesion(sesion_id):
     exerciseForm = ExerciseForm()
     sesion = Sesion.query.get_or_404(sesion_id)
