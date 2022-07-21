@@ -1,6 +1,8 @@
+from xmlrpc.client import DateTime
 from flask import request
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, TextAreaField
+from sqlalchemy import Integer
+from wtforms import StringField, SubmitField, TextAreaField, IntegerField, DateTimeField
 from wtforms.validators import DataRequired, ValidationError, Length
 from app.models import User
 
@@ -32,4 +34,17 @@ class PostForm(FlaskForm):
 
 class ExerciseForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired(), Length(min=3, max=128)])
+    submit = SubmitField('Submit')
+
+class SetForm(FlaskForm):
+    weight = IntegerField('weight', validators=[])
+    reps = IntegerField('repetitions', validators=[])
+    submit = SubmitField('Submit')
+
+class SesionForm(FlaskForm):
+    date = DateTimeField('Date Performed', validators=[])
+    due_time = DateTimeField('Due Date')
+    submit = SubmitField('Submit')
+
+class RoutineForm(FlaskForm):
     submit = SubmitField('Submit')
