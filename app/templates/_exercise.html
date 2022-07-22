@@ -1,7 +1,11 @@
 <table class="table table-hover">
     <tr>
         <td>
-            Exercise id: {{ exercise.id }}<br>
+            <a href="{{ url_for('main.user_exercises_info', user_exercise_id=exercise.id) }}">
+                Exercise id: {{ exercise.id }}<br>
+            </a>
+
+            <br>
         </td>
         <td>            
             Name: {{ exercise.name }}<br>

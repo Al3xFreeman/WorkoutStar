@@ -3,6 +3,7 @@ from hashlib import md5
 from time import time
 from flask import current_app
 from flask_login import UserMixin
+from sqlalchemy import ForeignKey
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 from app import db, login
@@ -109,9 +110,12 @@ class GoalExercise(db.Model):
 
 
 class ExerciseDef(db.Model):
+    __tablename__ = 'exercise_def'
+
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128))
-    goal_exercies_id
+    name = db.Column(db.String(128), nullable = False)
+    description = db.Column(db.String(256))
+    exercises = db.relationship('Exercise', backref='exercise_def', lazy='dynamic')
 
 # Active Session 
 
@@ -123,20 +127,21 @@ class Session(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self):
-        return '<Session Nº {}, with {} exercises, assigned to user: {}'.format(self.id, self.exercises.count(), self.user.username) + (', is part of routine Nº {}'.format(self.routine.id) if self.routine else '') + '>'
+        return '<Session Nº {}, with {} exercises, assigned to user: {}'.format(self.id, self.exercises.count(), self.user.username) + (', is part of routine Nº {}'.format(self.routine.id) if self.workout else '') + '>'
 
 
 
 class Exercise(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     session_id = db.Column(db.Integer, db.ForeignKey('session.id'))
-    goal_exercise_id = db.Column(db.Integer, db.ForeingKey('goal_exercise.id'))
+    goal_exercise_id = db.Column(db.Integer, db.ForeignKey('goal_exercise.id'))
     name = db.Column(db.String(128))
     done = db.Column(db.Boolean)
     duration = db.Column(db.Integer)
     timestamp = db.Column(db.DateTime, index = True, default = datetime.utcnow)
     sets = db.relationship('Set', backref='exercise', lazy='dynamic')
 
+    exercise_def_id = db.Column(db.Integer, db.ForeignKey('exercise_def.id'))
 
     def __repr__(self):
         return '<Exercise Nº {} with name {}, DONE = '.format(self.id, self.name) + ('Yes' if self.done else 'No') + '>'

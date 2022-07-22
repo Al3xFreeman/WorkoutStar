@@ -2,10 +2,10 @@ from datetime import datetime, timedelta
 from turtle import title
 from flask import current_app, render_template, flash, redirect, url_for, request, jsonify
 from flask_login import login_required, current_user
-from app.main.forms import EditProfileForm, EmptyForm, ExerciseForm, PostForm, RoutineForm, SesionForm
+from app.main.forms import EditProfileForm, EmptyForm, ExerciseDefForm, ExerciseForm, PostForm, RoutineForm, SesionForm
 from app import db
 from app.main import bp
-from app.models import Exercise, Routine, Session, User
+from app.models import Exercise, ExerciseDef, Routine, Session, User
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
@@ -152,3 +152,73 @@ def edit_profile():
         form.about_me.data = current_user.about_me
     
     return render_template('edit_profile.html', title = 'Edit Profile', form = form)
+
+
+@bp.route('/explore/user_exercises', methods=['GET', 'POST'])
+def user_exercises():
+    form = ExerciseForm()
+
+    if form.validate_on_submit():
+        ex = Exercise(name = form.name.data)
+        session = Session.query.get(form.session_id.data)
+        session.exercises.append(ex)
+        exerciseDef = ExerciseDef.query.get(form.exercise_def_id.data)
+        exerciseDef.exercises.append(ex)
+
+        db.session.add(ex)
+        db.session.add(session)
+        db.session.add(exerciseDef)
+        db.session.commit()
+
+        flash("New user done exercise added to the database")
+
+        return redirect(url_for('main.user_exercises'))
+
+    exercises = Exercise.query.all()
+
+    return render_template('all_user_exercises.html', title="User Exercises List", form = form, exercises = exercises, links = True)
+
+@bp.route('/explore/user_exercises/<user_exercise_id>')
+def user_exercises_info(user_exercise_id):
+    ex = Exercise.query.get_or_404(user_exercise_id)
+    if ex.session is not None:
+        user = ex.session.user.username
+    else:
+        user = "No assigned user"
+
+    return render_template('exercise_info.html', title="{} Info".format(ex.name), exercises = ex, user = user)
+
+
+@bp.route('/explore/exercises', methods=['GET', 'POST'])
+def exercises():
+    form = ExerciseDefForm()
+
+    if form.validate_on_submit():
+        ex = ExerciseDef(name = form.name.data)
+        db.session.add(ex)
+        db.session.commit()
+
+        flash("New exercise added to the database")
+
+        return redirect(url_for('main.exercises'))
+
+    exercises = ExerciseDef.query.all()
+
+    return render_template('all_exercises.html', title="Exercises List", form = form, exercises = exercises, links = True)
+
+
+@bp.route('/explore/exercises/<exercise_id>')
+def exercise_info(exercise_id):
+    exercise = ExerciseDef.query.get_or_404(exercise_id)
+    #user_exercises = exercise.exercises.join(Session).filter(User.username == current_user.username).all()
+    user_exercises = exercise.exercises.join(Session).join(User).all()
+    
+    total_weight = 0
+    total_reps = 0
+
+    for exercise in user_exercises:
+        for set in exercise.sets:
+            total_weight += set.weight
+            total_reps += set.reps
+
+    return render_template('exerciseDef_info.html', title="{} Info".format(exercise.name), exercises = user_exercises, total_reps = total_reps, total_weight = total_weight)

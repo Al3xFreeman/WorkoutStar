@@ -1,0 +1,20 @@
+<table class="table table-hover">
+    <tr>
+        <td>
+            Exercise id: {{ exercise.id }}<br>
+        </td>
+        <td>            
+        {% if links %}
+            <a href="{{ url_for('main.exercise_info', exercise_id=exercise.id) }}">
+                Name: {{ exercise.name }}<br>
+            </a>
+
+        {% else %}
+            Name: {{ exercise.name }}<br>
+
+        {% endif %}
+        
+        </td>
+        
+    </tr>
+</table>

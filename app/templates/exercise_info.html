@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+
+
+    <a href="{{ url_for('main.user_exercises') }}">Back to all user exercises</a>
+    <br>
+    <br>
+    {% if form %}
+    {{ wtf.quick_form(form) }}
+    <br>
+    {% endif %}
+    
+    Exercise belongs to: {{ user }}
+    Exercise sets: {{ len(user.sets) }}
+    {% include "_set.html" %}
+{% endblock %}
