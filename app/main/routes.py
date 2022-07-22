@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from turtle import title
 from flask import current_app, render_template, flash, redirect, url_for, request, jsonify
 from flask_login import login_required, current_user
@@ -11,24 +11,32 @@ from app.models import Exercise, Routine, Sesion, User
 @bp.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
-    form = PostForm()
-    if form.validate_on_submit():
+    # form = PostForm()
+    # if form.validate_on_submit():
         
-        #post = Post(body=form.post.data, author=current_user)
-        #db.session.add(post)
-        db.session.commit()
-        flash('Your post is now published!')
-        return redirect(url_for('main.index'))
+    #     #post = Post(body=form.post.data, author=current_user)
+    #     #db.session.add(post)
+    #     db.session.commit()
+    #     flash('Your post is now published!')
+    #     return redirect(url_for('main.index'))
 
-    page = request.args.get('page', 1, type=int)
+    # page = request.args.get('page', 1, type=int)
     #posts = current_user.followed_posts().paginate(page, current_app.config['POSTS_PER_PAGE'], False)
 
-    #Ternary operator
-    #next_url = url_for('main.index', page=posts.next_num) if posts.has_next else None
-    #prev_url = url_for('main.index', page=posts.prev_num) if posts.has_prev else None
+    # Ternary operator
+    # next_url = url_for('main.index', page=posts.next_num) if posts.has_next else None
+    # prev_url = url_for('main.index', page=posts.prev_num) if posts.has_prev else None
+    today = datetime.now().date()
+    start_of_week = today - timedelta(days = today.weekday())
 
-    #return render_template("index.html", title='Home', form=form, posts=posts.items, next_url=next_url, prev_url=prev_url)
-    return "Hola"
+    routines = Routine.query.order_by(Routine.user_id.asc()).all()
+
+    week = [start_of_week + timedelta(days=i) for i in range(0, 7)]
+
+
+
+    return render_template("index.html", title='Home', week=week, routines=routines)
+    # return "Hola"
 
 @bp.route('/explore')
 @login_required
