@@ -10,7 +10,7 @@ from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from config import Config
 
-db = SQLAlchemy()
+db : SQLAlchemy = SQLAlchemy()
 migrate = Migrate()
 login = LoginManager()
 login.login_view = 'auth.login'

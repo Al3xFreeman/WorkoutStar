@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 from app.main.forms import EditProfileForm, EmptyForm, ExerciseForm, PostForm, SesionForm
 from app import db
 from app.main import bp
-from app.models import Exercise, Routine, Sesion, User
+from app.models import Exercise, Routine, Session, User
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
@@ -27,9 +27,9 @@ def index():
     # next_url = url_for('main.index', page=posts.next_num) if posts.has_next else None
     # prev_url = url_for('main.index', page=posts.prev_num) if posts.has_prev else None
     today = datetime.now().date()
-    start_of_week = today - timedelta(days = today.weekday())
+    start_of_week = today
 
-    routines = Routine.query.order_by(Routine.user_id.asc()).all()
+    routines = current_user
 
     week = [start_of_week + timedelta(days=i) for i in range(0, 7)]
 
@@ -47,7 +47,7 @@ def explore():
     #prev_url = url_for('main.explore', page=posts.prev_num) if posts.has_prev else None
 
     #return render_template("index.html", title='Explore', posts=posts.items, next_url=next_url, prev_url=prev_url)
-    sesions = Sesion.query.order_by(Sesion.date.desc()).all()
+    sesions = Session.query.order_by(Session.date.desc()).all()
     return render_template("explore.html", title='Explore sesions')
 
 
@@ -62,13 +62,13 @@ def explore_sesions():
     #return render_template("index.html", title='Explore', posts=posts.items, next_url=next_url, prev_url=prev_url)
     form = SesionForm(date=datetime.now())
     if form.validate_on_submit():
-        sesion = Sesion(user=current_user, date=form.date.data, due_time=form.due_time.data)
+        sesion = Session(user=current_user, date=form.date.data, due_time=form.due_time.data)
         db.session.add(sesion)
         db.session.commit()
         flash('Your sesion has been successfully added')
         return redirect(url_for('main.explore_sesions'))
 
-    sesions = Sesion.query.order_by(Sesion.date.desc()).all()
+    sesions = Session.query.order_by(Session.date.desc()).all()
     return render_template("all_sesions.html", title='Explore sesions', sesions=sesions, form=form)
 
 @bp.route('/explore/sesions/<routine_id>')
@@ -90,7 +90,7 @@ def routine(routine_id):
 @bp.route('/sesions/<sesion_id>', methods=['GET', 'POST'])
 def sesion(sesion_id):
     exerciseForm = ExerciseForm()
-    sesion = Sesion.query.get_or_404(sesion_id)
+    sesion = Session.query.get_or_404(sesion_id)
 
     if exerciseForm.validate_on_submit():
         exercise = Exercise(sesion=sesion, name=exerciseForm.name.data)
@@ -99,13 +99,13 @@ def sesion(sesion_id):
         flash("Eexercise added succesfully")
         return redirect(url_for('main.sesion', sesion_id = sesion_id))
 
-    return render_template('sesion_info.html', title="Sesion info", sesion=sesion, form=exerciseForm)
+    return render_template('sesion_info.html', title="Session info", sesion=sesion, form=exerciseForm)
 
 @bp.route('/sesion/<sesion_id>/exercises')
 def sesion_exercises(sesion_id):
-    sesion_exercises = Sesion.query.get_or_404(sesion_id).exercises.all()
+    sesion_exercises = Session.query.get_or_404(sesion_id).exercises.all()
 
-    return render_template('exercises_sesion.html', title="Exercises in Sesion: " + str(sesion_id), exercises=sesion_exercises, sesion_id = sesion_id)
+    return render_template('exercises_sesion.html', title="Exercises in Session: " + str(sesion_id), exercises=sesion_exercises, sesion_id = sesion_id)
 
 
 @bp.route('/user/<username>')
