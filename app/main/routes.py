@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from turtle import title
 from flask import current_app, render_template, flash, redirect, url_for, request, jsonify
 from flask_login import login_required, current_user
-from app.main.forms import EditProfileForm, EmptyForm, ExerciseForm, PostForm, SesionForm
+from app.main.forms import EditProfileForm, EmptyForm, ExerciseForm, PostForm, RoutineForm, SesionForm
 from app import db
 from app.main import bp
 from app.models import Exercise, Routine, Session, User
@@ -76,10 +76,20 @@ def sesions_in_routine(routine_id):
     sesions = Routine.query.get_or_404(routine_id).sesions.all()
     return render_template("all_sesions.html", sesions = sesions, routine_id=routine_id)
 
-@bp.route('/explore/routines')
+@bp.route('/explore/routines', methods=['GET', 'POST'])
 def explore_routines():
+
+    form = RoutineForm()
+    if form.validate_on_submit():
+        routine = Routine(user=current_user)
+
+        db.session.add(routine)
+        db.session.commit()
+        flash('New routine added for {}'.format(current_user.username))
+        return redirect(url_for('main.explore_routines'))
+
     routines = Routine.query.order_by(Routine.user_id.asc()).all()
-    return render_template("all_routines.html", routines = routines)
+    return render_template("all_routines.html", routines = routines, form=form)
 
 @bp.route('/routines/<routine_id>')
 def routine(routine_id):
