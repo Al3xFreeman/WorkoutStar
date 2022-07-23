@@ -182,11 +182,11 @@ def user_exercises():
 def user_exercises_info(user_exercise_id):
     ex = Exercise.query.get_or_404(user_exercise_id)
     if ex.session is not None:
-        user = ex.session.user.username
+        user = ex.session.user
     else:
-        user = "No assigned user"
+        user = None
 
-    return render_template('exercise_info.html', title="{} Info".format(ex.name), exercises = ex, user = user)
+    return render_template('exercise_info.html', title="{} Info".format(ex.name), exercise = ex, user = user)
 
 
 @bp.route('/explore/exercises', methods=['GET', 'POST'])
@@ -209,16 +209,16 @@ def exercises():
 
 @bp.route('/explore/exercises/<exercise_id>')
 def exercise_info(exercise_id):
-    exercise = ExerciseDef.query.get_or_404(exercise_id)
+    exerciseDef = ExerciseDef.query.get_or_404(exercise_id)
     #user_exercises = exercise.exercises.join(Session).filter(User.username == current_user.username).all()
-    user_exercises = exercise.exercises.join(Session).join(User).all()
+    user_exercises = exerciseDef.exercises.join(Session).join(User).all()
     
     total_weight = 0
     total_reps = 0
-
-    for exercise in user_exercises:
-        for set in exercise.sets:
+    
+    for ex in user_exercises:
+        for set in ex.sets:
             total_weight += set.weight
             total_reps += set.reps
 
-    return render_template('exerciseDef_info.html', title="{} Info".format(exercise.name), exercises = user_exercises, total_reps = total_reps, total_weight = total_weight)
+    return render_template('exerciseDef_info.html', title="{} Info".format(exerciseDef.name), exerciseDef=exerciseDef, exercises = user_exercises, total_reps = total_reps, total_weight = total_weight)

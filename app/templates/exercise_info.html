@@ -12,7 +12,17 @@
     <br>
     {% endif %}
     
-    Exercise belongs to: {{ user }}
-    Exercise sets: {{ len(user.sets) }}
-    {% include "_set.html" %}
+    Exercise belongs to: 
+    {% if user %}
+        {{ user.username }}
+    {% else %}
+        No assigned user
+    {% endif %}
+    <br>
+    Exercise sets: {{ exercise.sets.count() }}
+    {% set sets=exercise.sets %}
+
+    {% for set in sets %}
+        {% include "_set.html" %}
+    {% endfor %}
 {% endblock %}

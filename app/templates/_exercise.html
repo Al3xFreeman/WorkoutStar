@@ -8,10 +8,18 @@
             <br>
         </td>
         <td>            
-            Name: {{ exercise.name }}<br>
+            {% if exercise.exercise_def %}
+            Name: <a href="{{ url_for('main.exercise_info', exercise_id=exercise.exercise_def.id) }}">{{ exercise.exercise_def.name }}</a> <br>
+            {% endif %}
+            
+            {% if exercise.session %}
+            {% set username = exercise.session.user.username %}
+            Performed by: <a href="{{ url_for('main.user', username=username) }}">{{ username }}</a>  <br>
+            {% endif %}
             Done? {% if exercise.done %} YES {% else %} NO {% endif %}<br>
             {% if exercise.duration %} Exercise duration: {{ exercise.duration }} {% endif %}<br>
             {% if exercise.timestamp %} Performed at: {{ exercise.timestamp }} {% endif %}<br>
+            {% set sets = exercise.sets %}
             {% for set in sets %}
                 {% include "_set.html" %}
             {% endfor %}
