@@ -1,4 +1,3 @@
-import json
 from os import abort
 from app import db
 from app.api import bp
