@@ -210,7 +210,7 @@ class Session(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self):
-        return '<Session Nº {}, with {} exercises, assigned to user: {}'.format(self.id, self.exercises.count(), self.user.username) + (', is part of routine Nº {}'.format(self.routine.id) if self.workout else '') + '>'
+        return '<Session Nº {}, with {} exercises, assigned to user: {}'.format(self.id, self.exercises.count(), self.user.username) + '>'
 
 
 
