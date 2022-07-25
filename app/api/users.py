@@ -47,7 +47,7 @@ def create_user():
     return response
 
 @bp.route('/users/<int:id>', methods=['PUT'])
-@token_auth.login_required
+#@token_auth.login_required
 def update_user(id):
     if token_auth.current_user().id != id:
         abort(403)
@@ -67,9 +67,9 @@ def update_user(id):
     return jsonify(user.to_dict())
 
 @bp.route('/users/<int:id>/routines', methods=['GET'])
-def get_routines(id):
+def get_user_routines(id):
     pass
 
 @bp.route('/users/<int:id>/sessions', methods=['GET'])
-def get_sessions(id):
+def get_user_sessions(id):
     pass

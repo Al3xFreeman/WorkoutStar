@@ -123,8 +123,8 @@ class User(PaginatedAPIMixin, UserMixin, db.Model):
             'session_count': self.sessions.count(),
             '_links': {
                 'self': url_for('api.get_user', id=self.id),
-                'routines': url_for('api.get_routines', id=self.id),
-                'sessions': url_for('api.get_sessions', id=self.id),
+                'user_routines': url_for('api.get_user_routines', id=self.id),
+                'user_sessions': url_for('api.get_user_sessions', id=self.id),
                 'avatar': self.avatar(avatar_size)
             }   
         }
@@ -151,7 +151,7 @@ def load_user(id):
 
 
 
-class Routine(db.Model):
+class Routine(PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     #session_id = db.Column(db.Integer, db.ForeignKey('session.id'))
@@ -160,6 +160,25 @@ class Routine(db.Model):
 
     def __repr__(self):
         return '<Routine Nº {}'.format(self.id) + (' assigned to user: {}>'.format(self.user.username) if self.user else '') + '>'
+
+    def to_dict(self):
+        data = {
+            'id': self.id,
+            'period' : self.period,
+            '_links': {
+                'self': url_for('api.get_routine', id=self.id),
+                'workouts': url_for('api.get_routine_workouts', id=self.id),
+                'user': url_for('api.get_routine_user', id=self.id)
+            }
+        }
+    
+        return data
+
+    def from_dict(self, data):
+        for field in ['period', 'user_id']:
+            if field in data:
+                setattr(self, field, data[field])
+
 
 # Definition of workouts
 
