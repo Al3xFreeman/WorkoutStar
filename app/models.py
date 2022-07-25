@@ -168,7 +168,7 @@ class Routine(PaginatedAPIMixin, db.Model):
             '_links': {
                 'self': url_for('api.get_routine', id=self.id),
                 'workouts': url_for('api.get_routine_workouts', id=self.id),
-                'user': url_for('api.get_routine_user', id=self.id)
+                'user': url_for('api.get_user', id=self.user_id)
             }
         }
     

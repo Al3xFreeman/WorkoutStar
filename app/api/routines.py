@@ -31,15 +31,7 @@ def get_routines():
 def create_routine():
     
     data = request.get_json() or {}
-    """
-    if 'user_id' not in data or 'period' not in data:
-        return bad_request('Must specify a valid user id and a period for the routine')
-    u = User.query.get(data['user_id'])
-    if u == None:
-        return bad_request('Please use a valid user_id')
-    """
-    print(request.form)
-    errors = routineSchema.validate(request.get_json() or {})
+    errors = routineSchema.validate(data)
     if errors:
         return bad_request(errors)
 
@@ -58,17 +50,19 @@ def create_routine():
 @bp.route('/routines/<int:id>', methods=['PUT'])
 #@token_auth.login_required
 def update_routine(id):
-    r = Routine.query.get_or_404(id)
+    
+    # TODO: Make policy for who can modify what resource
+
     #if token_auth.current_user().id != r.user_id:
     #    abort(403)
     
-    data = request.get_json() or {}    
-    
-    if 'user_id' in data:
-        u = User.query.get_or_404(data['user_id'])
-        r.user_id = data['user_id']
-    if 'period' in data and int(data['period']):
-        r.period = data['period']
+    data = request.get_json() or {}
+    errors = routineSchema.validate(data)
+    if errors:
+        return bad_request(errors)
+
+    r = Routine.query.get_or_404(id)
+    r.from_dict(data)
 
     db.session.commit()
     return jsonify(r.to_dict())
