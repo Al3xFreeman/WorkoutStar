@@ -35,7 +35,7 @@ def create_routine():
     if errors:
         return bad_request(errors)
 
-    routine = Routine(user_id=data['user_id'], period=data['period'])
+    routine = Routine()
     routine.from_dict(data)
 
     db.session.add(routine)
@@ -70,11 +70,6 @@ def update_routine(id):
 @bp.route('/routines/<int:id>', methods=['DELETE'])
 @token_auth.login_required
 def delete_routine(id):
-    pass
-
-@bp.route('/routines/<int:id>/user', methods=['GET'])
-@token_auth.login_required
-def get_routine_user(id):
     pass
 
 @bp.route('/routines/<int:id>/sessions', methods=['GET'])
