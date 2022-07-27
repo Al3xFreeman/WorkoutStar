@@ -320,7 +320,7 @@ class Exercise(PaginatedAPIMixin, db.Model):
             '_links': {
                 'self': url_for('api.get_routine', id=self.id),
                 'session': url_for('api.get_session', id=self.session_id),
-                'goal_exercise_id': url_for('api.get_goal_exercise', id=self.goal_exercise_id),
+                'goal_exercise_id': url_for('api.get_goal_exercise', id=self.goal_exercise_id) if self.goal_exercise_id else None,
                 'exerciseDef': url_for('api.get_exerciseDef', id=self.exercise_def_id),
                 'sets':url_for('api.get_exercise_sets', id=self.id)
             }
