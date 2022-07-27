@@ -47,3 +47,16 @@ def create_exercise():
     response.headers['Location'] = url_for('api.get_exercise', id = exercise.id)
 
     return response
+
+
+
+
+@bp.route('exercises/<int:id>/sets')
+def get_exercise_sets(id):
+    page = request.args.get('page', 1, type=int)
+    per_page = min(request.args.get('per_page', 10, type=int), 100)
+
+    ex = Exercise.query.get_or_404(id)
+    data = Exercise.to_collection_dict(ex.sets, page, per_page, 'api.get_sets')
+
+    return data
