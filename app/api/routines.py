@@ -1,9 +1,10 @@
 from os import abort
+
 from app import db
 from app.api import bp
 from app.api.auth import token_auth
 from app.api.errors import bad_request
-from app.models import Routine, Session, User
+from app.models import Routine, Session, User, Workout
 from flask import jsonify, request, url_for
 from app.model_schemas import RoutineSchema
 
@@ -71,12 +72,19 @@ def update_routine(id):
 @token_auth.login_required
 def delete_routine(id):
     pass
-
+"""
 @bp.route('/routines/<int:id>/sessions', methods=['GET'])
 @token_auth.login_required
 def get_routine_sessions(id):
-    pass
+    page = request.args.get('page', 1, type=int)
+    per_page = min(request.args.get('per_page', 10, type=int), 100)
 
+    r = Routine.query.get_or_404(id)
+
+    data = Session.to_collection_dict(r.sessions, page, per_page, 'api.get_sessions')
+
+    return jsonify(data)
+"""
 @bp.route('/routines/<int:routine_id>', methods=['POST', 'PUT'])
 @token_auth.login_required
 def add_routine_session(id):
@@ -89,4 +97,11 @@ def remove_routine_session(routine_id, session_id):
 
 @bp.route('/routines/<int:id>/workouts', methods=['GET'])
 def get_routine_workouts(id):
-    pass
+    page = request.args.get('page', 1, type=int)
+    per_page = min(request.args.get('per_page', 10, type=int), 100)
+
+    r = Routine.query.get_or_404(id)
+
+    data = Workout.to_collection_dict(r.workouts, page, per_page, 'api.get_workouts')
+
+    return jsonify(data)

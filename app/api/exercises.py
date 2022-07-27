@@ -49,9 +49,25 @@ def create_exercise():
     return response
 
 
+@bp.route('/exercise/<int:id>', methods=['PUT'])
+def update_exercise(id):
+    data = request.get_json() or {}
+    errors = exerciseSchema.validate(data)
+    if errors:
+        return bad_request(errors)
+
+    exercise = Exercise.query.get_or_404(id)
+    exercise.from_dict(data)
+
+    return jsonify(exercise.to_dict())
 
 
-@bp.route('exercises/<int:id>/sets')
+@bp.route('/exercises/<int:id>', methods=['DELETE'])
+def delete_exercise(id):
+    pass
+
+
+@bp.route('/exercises/<int:id>/sets', methods=['GET'])
 def get_exercise_sets(id):
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 100)

@@ -204,7 +204,7 @@ class Workout(PaginatedAPIMixin, db.Model):
             'id': self.id,
             'day' : self.day,
             'name' : self.name,
-            'session_number': self.sessions.count(),
+            'number_of_sessions': self.sessions.count(),
             '_links': {
                 'self': url_for('api.get_workout', id=self.id),
                 #'goal_exercises': url_for('api.get_workout_goal_exercises', id=self.id),
