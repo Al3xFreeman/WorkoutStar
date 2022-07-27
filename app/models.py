@@ -4,6 +4,7 @@ from time import time
 from flask import current_app, url_for
 from flask_login import UserMixin
 from flask_sqlalchemy import Pagination
+from requests import session
 from sqlalchemy import false
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
@@ -11,6 +12,12 @@ from app import db, login
 
 import base64
 import os
+
+class MetadataMixin(object):
+    deleted = db.Column(db.Boolean)
+    deleted_date = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime)
+    updated_at = db.Column(db.DateTime)
 
 class PaginatedAPIMixin(object):
 
@@ -197,9 +204,10 @@ class Workout(PaginatedAPIMixin, db.Model):
             'id': self.id,
             'day' : self.day,
             'name' : self.name,
+            'session_number': self.sessions.count(),
             '_links': {
-                'self': url_for('api.get_exerciseDef', id=self.id),
-                'goal_exercises': url_for('api.get_workout_goal_exercises', id=self.id),
+                'self': url_for('api.get_workout', id=self.id),
+                #'goal_exercises': url_for('api.get_workout_goal_exercises', id=self.id),
                 'sessions' : url_for('api.get_workout_sessions', id=self.id)
             }
         }
