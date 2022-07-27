@@ -21,7 +21,7 @@ def get_workout(id):
 #@token_auth.login_required
 def get_workout_sessions(id):
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
+    per_page = min(request.args.get('per_page', 10, type=int), 100)
 
     workout = Workout.query.get_or_404(id)
     data = Workout.to_collection_dict(workout.sessions, page, per_page, 'api.get_sessions')
@@ -32,7 +32,7 @@ def get_workout_sessions(id):
 #@token_auth.login_required
 def get_workouts():
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
+    per_page = min(request.args.get('per_page', 10, type=int), 100)
 
     data = Workout.to_collection_dict(Workout.query, page, per_page, 'api.get_workouts')
 

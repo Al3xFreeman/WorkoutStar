@@ -16,7 +16,7 @@ def get_exerciseDef(id):
 @bp.route('/exerciseDefs', methods=['GET'])
 def get_exerciseDefs():
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
+    per_page = min(request.args.get('per_page', 10, type=int), 100)
 
     data = ExerciseDef.to_collection_dict(ExerciseDef.query, page, per_page, 'api.get_exerciseDefs')
 
@@ -67,7 +67,7 @@ def delete_exerciseDef(id):
 @bp.route('exerciseDefs/<int:id>/exercises', methods=['GET'])
 def get_exerciseDef_exercises(id):
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
+    per_page = min(request.args.get('per_page', 10, type=int), 100)
 
     ex_def = ExerciseDef.query.get_or_404(id)
     data = ExerciseDef.to_collection_dict(ex_def.exercises, page, per_page, 'api.get_exercises')

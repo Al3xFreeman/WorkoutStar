@@ -18,7 +18,7 @@ def get_session(id):
 @token_auth.login_required
 def get_sessions():
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
+    per_page = min(request.args.get('per_page', 10, type=int), 100)
 
     data = Session.to_collection_dict(Session.query, page, per_page, 'api.get_sessions')
 
