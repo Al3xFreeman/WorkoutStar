@@ -317,6 +317,8 @@ class Exercise(PaginatedAPIMixin, db.Model):
             'done' : self.done,
             'duration' : self.duration,
             'timestamp' : self.timestamp,
+            'number_of_sets': self.sets.count(),
+            'total_stats': self.sets_info(),
             '_links': {
                 'self': url_for('api.get_routine', id=self.id),
                 'session': url_for('api.get_session', id=self.session_id),
@@ -333,6 +335,22 @@ class Exercise(PaginatedAPIMixin, db.Model):
             if field in data:
                 setattr(self, field, data[field])
 
+    def sets_info(self):
+        data = {}
+        for set in self.sets:
+            for key, value in set.set_info().items():
+                if value is not None:
+                    if key not in data:
+                        data[key] = value
+                    else:
+                        data[key] += value
+        
+        
+        print(data)
+        return data
+
+
+
 class Set(PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     exercise_id = db.Column(db.Integer, db.ForeignKey('exercise.id'))
@@ -341,6 +359,12 @@ class Set(PaginatedAPIMixin, db.Model):
 
     def __repr__(self):
         return '<Set Nº {}, weight lifted: {}, reps done: {}>'.format(self.id, self.weight, self.reps)
+
+    def set_info(self):
+        return {
+            'weight': self.weight if self.weight else None,
+            'reps': self.reps if self.reps else None
+        }
 
     def to_dict(self):
         data = {
