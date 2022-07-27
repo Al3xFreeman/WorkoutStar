@@ -74,17 +74,17 @@ def delete_routine(id):
 
 @bp.route('/routines/<int:id>/sessions', methods=['GET'])
 @token_auth.login_required
-def get_sessions(id):
+def get_routine_sessions(id):
     pass
 
 @bp.route('/routines/<int:routine_id>', methods=['POST', 'PUT'])
 @token_auth.login_required
-def add_session(id):
+def add_routine_session(id):
     pass
 
 @bp.route('/routines/<int:routine_id>/<int:session_id>', methods=['PUT', 'DELETE'])
 @token_auth.login_required
-def remove_session(routine_id, session_id):
+def remove_routine_session(routine_id, session_id):
     pass
 
 @bp.route('/routines/<int:id>/workouts', methods=['GET'])
