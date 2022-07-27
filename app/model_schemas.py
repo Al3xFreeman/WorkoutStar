@@ -10,8 +10,8 @@ from app.models import User, Routine, Session, ExerciseDef, Exercise
 
 
 class UserCreationSchema(Schema):
-    username = fields.Str(required=True, validate=Length(3, 64))
-    email = fields.Email(required=True, validate=Length(3, 128))
+    username = fields.Str(required=True, validate=Length(3, 64, error='The username length must be between {min} and {max} characters long'))
+    email = fields.Email(required=True, validate=Length(3, 128, error='The email length must be between {min} and {max} characters long'))
     password = fields.String(required=True)
     
 
@@ -23,7 +23,7 @@ class UserCreationSchema(Schema):
 
 class RoutineSchema(Schema):
     user_id = fields.Int(required=True)
-    period = fields.Int(required=True, validate=Range(min=1))
+    period = fields.Int(required=True, validate=Range(min=1, error="The minimum length of a routine is {min} day"))
 
     @validates('user_id')
     def valid_user_id(self, id):

@@ -16,7 +16,7 @@ def get_set(id):
 @bp.route('/sets', methods=['GET'])
 def get_sets():
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
+    per_page = min(request.args.get('per_page', 10, type=int), 100)
 
     data = Set.to_collection_dict(Set.query, page, per_page, 'api.get_sets')
 
