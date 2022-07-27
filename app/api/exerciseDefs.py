@@ -38,7 +38,7 @@ def create_exerciseDef():
 
     response = jsonify(ex_def.to_dict())
     response.status_code = 201
-    response['Location'] = url_for('api.get_exerciseDef', id = ex_def.id)
+    response.headers['Location'] = url_for('api.get_exerciseDef', id = ex_def.id)
 
     return response
 

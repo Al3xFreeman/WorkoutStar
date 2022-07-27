@@ -39,7 +39,7 @@ def create_set():
 
     response = jsonify(set.to_dict())
     response.status_code = 201
-    response['Location'] = url_for('api.get_set', id = set.id)
+    response.headers['Location'] = url_for('api.get_set', id = set.id)
 
     return response
 
