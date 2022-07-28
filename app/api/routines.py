@@ -1,12 +1,11 @@
-from os import abort
-
 from app import db
 from app.api import bp
 from app.api.auth import token_auth
 from app.api.errors import bad_request
-from app.models import Routine, Session, User, Workout
+from app.models import Routine, User, Workout
 from flask import jsonify, request, url_for
 from app.model_schemas import RoutineSchema
+from datetime import datetime
 
 routineSchema = RoutineSchema()
 
@@ -66,12 +65,21 @@ def update_routine(id):
     r.from_dict(data)
 
     db.session.commit()
+    
     return jsonify(r.to_dict())
 
 @bp.route('/routines/<int:id>', methods=['DELETE'])
 @token_auth.login_required
 def delete_routine(id):
-    pass
+    r = Routine.query.get_or_404(id)
+
+    r.deleted = True
+    r.deleted_date = datetime.utcnow()
+
+    db.session.commit()
+
+    return jsonify(r.to_dict())
+    
 """
 @bp.route('/routines/<int:id>/sessions', methods=['GET'])
 @token_auth.login_required

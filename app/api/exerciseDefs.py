@@ -5,6 +5,7 @@ from app.models import Exercise, ExerciseDef
 from app.api import bp
 from app import db
 from app.api.errors import bad_request
+from datetime import datetime
 
 exerciseDefSchema = ExerciseDefSchema()
 
@@ -61,7 +62,14 @@ def update_exerciseDef(id):
 
 @bp.route('/exerciseDefs/<int:id>', methods=['DELETE'])
 def delete_exerciseDef(id):
-    pass
+    ex_def = ExerciseDef.query.get_or_404(id)
+
+    ex_def.deleted = True
+    ex_def.deleted_date = datetime.utcnow()
+
+    db.session.commit()
+
+    return jsonify(ex_def.to_dict())
 
 
 @bp.route('/exerciseDefs/<int:id>/exercises', methods=['GET'])

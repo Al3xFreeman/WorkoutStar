@@ -1,11 +1,9 @@
 from datetime import datetime, timedelta
+from email.policy import default
 from hashlib import md5
 from time import time
 from flask import current_app, url_for
 from flask_login import UserMixin
-from flask_sqlalchemy import Pagination
-from requests import session
-from sqlalchemy import false
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 from app import db, login
@@ -14,7 +12,7 @@ import base64
 import os
 
 class MetadataMixin(object):
-    deleted = db.Column(db.Boolean)
+    deleted = db.Column(db.Boolean, default=False)
     deleted_date = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime)
     updated_at = db.Column(db.DateTime)
@@ -43,7 +41,7 @@ class PaginatedAPIMixin(object):
 
 
 
-class User(PaginatedAPIMixin, UserMixin, db.Model):
+class User(MetadataMixin, PaginatedAPIMixin, UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(64), index = True, unique = True)
     email = db.Column(db.String(128), index = True, unique = True)
@@ -158,7 +156,7 @@ def load_user(id):
 
 
 
-class Routine(PaginatedAPIMixin, db.Model):
+class Routine(MetadataMixin, PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     #session_id = db.Column(db.Integer, db.ForeignKey('session.id'))
@@ -189,7 +187,7 @@ class Routine(PaginatedAPIMixin, db.Model):
 
 # Definition of workouts
 
-class Workout(PaginatedAPIMixin, db.Model):
+class Workout(MetadataMixin, PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     day = db.Column(db.Integer)
     name = db.Column(db.String(128))
@@ -237,7 +235,7 @@ class GoalExercise(db.Model):
 
 
 
-class ExerciseDef(PaginatedAPIMixin, db.Model):
+class ExerciseDef(MetadataMixin, PaginatedAPIMixin, db.Model):
     __tablename__ = 'exercise_def'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -264,7 +262,7 @@ class ExerciseDef(PaginatedAPIMixin, db.Model):
                 setattr(self, field, data[field])
 
 
-class Session(PaginatedAPIMixin, db.Model):
+class Session(MetadataMixin, PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     date = db.Column(db.DateTime, index = True, nullable = True, default = datetime.utcnow)
     exercises = db.relationship('Exercise', backref='session', lazy='dynamic')
@@ -295,7 +293,7 @@ class Session(PaginatedAPIMixin, db.Model):
                 setattr(self, field, data[field])
 
 
-class Exercise(PaginatedAPIMixin, db.Model):
+class Exercise(MetadataMixin, PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     session_id = db.Column(db.Integer, db.ForeignKey('session.id'))
     goal_exercise_id = db.Column(db.Integer, db.ForeignKey('goal_exercise.id'))
@@ -351,7 +349,7 @@ class Exercise(PaginatedAPIMixin, db.Model):
 
 
 
-class Set(PaginatedAPIMixin, db.Model):
+class Set(MetadataMixin, PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     exercise_id = db.Column(db.Integer, db.ForeignKey('exercise.id'))
     weight = db.Column(db.Integer)

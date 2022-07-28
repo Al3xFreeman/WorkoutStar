@@ -4,6 +4,7 @@ from app.api.errors import bad_request
 from app import db
 from app.models import Set
 from app.model_schemas import SetSchema
+from datetime import datetime
 
 setSchema = SetSchema()
 
@@ -61,4 +62,11 @@ def update_set(id):
 
 @bp.route('sets/<int:id>', methods=['DELETE'])
 def delete_set(id):
-    pass
+    s = Set.query.get_or_404(id)
+
+    w.deleted = True
+    w.deleted_date = datetime.utcnow()
+
+    db.session.commit()
+
+    return jsonify(s.to_dict())

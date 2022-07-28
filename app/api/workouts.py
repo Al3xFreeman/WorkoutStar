@@ -9,6 +9,7 @@ from flask import jsonify
 from app.models import Workout, Session
 from flask import request, url_for
 from app.model_schemas import WorkoutSchema
+from datetime import datetime
 
 workoutSchema = WorkoutSchema()
 
@@ -72,5 +73,11 @@ def update_workout(id):
 
 @bp.route('/workouts/<int:id>', methods=['DELETE'])
 def delete_workout(id):
-    pass
+    w = Workout.query.get_or_404(id)
 
+    w.deleted = True
+    w.deleted_date = datetime.utcnow()
+
+    db.session.commit()
+
+    return jsonify(w.to_dict())

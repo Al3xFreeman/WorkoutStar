@@ -1,3 +1,4 @@
+from datetime import datetime
 from os import abort
 from app import db
 from app.api import bp
@@ -64,6 +65,19 @@ def update_user(id):
     db.session.commit()
     return jsonify(user.to_dict())
 
+
+@bp.route('/users/<int:id>', methods=['DELETE'])
+def delete_user(id):
+    u = User.query.get_or_404(id)
+
+    u.deleted = True
+    u.deleted_date = datetime.utcnow()
+
+    db.session.commit()
+
+    return jsonify(u.to_dict())
+
+    
 @bp.route('/users/<int:id>/routines', methods=['GET'])
 def get_user_routines(id):
     page = request.args.get('page', 1, type=int)

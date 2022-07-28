@@ -6,6 +6,7 @@ from app.api.errors import bad_request
 from app.model_schemas import SessionSchema
 from app.models import Exercise, Session
 from flask import jsonify, request, url_for
+from datetime import datetime
 
 sessionSchema = SessionSchema()
 
@@ -62,8 +63,14 @@ def update_session(id):
 @bp.route('/sessions/<int:id>', methods=['DELETE'])
 @token_auth.login_required
 def delete_session(id):
-    pass
+    s = Session.query.get_or_404(id)
 
+    s.deleted = True
+    s.deleted_date = datetime.utcnow()
+
+    db.session.commit()
+
+    return jsonify(s.to_dict())
 @bp.route('/sessions/<int:id>/exercises', methods=['GET'])
 @token_auth.login_required
 def get_session_exercises(id):

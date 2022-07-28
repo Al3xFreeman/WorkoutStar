@@ -9,6 +9,8 @@ from app.api import bp
 from app.api.errors import bad_request
 from app.model_schemas import ExerciseSchema
 from app.models import Exercise
+from app import db
+from datetime import datetime
 
 
 exerciseSchema = ExerciseSchema()
@@ -42,6 +44,9 @@ def create_exercise():
     exercise = Exercise()
     exercise.from_dict(data)
 
+    db.session.add(exercise)
+    db.session.commit()
+
     response = jsonify(exercise.to_dict())
     response.status_code = 201
     response.headers['Location'] = url_for('api.get_exercise', id = exercise.id)
@@ -59,13 +64,21 @@ def update_exercise(id):
     exercise = Exercise.query.get_or_404(id)
     exercise.from_dict(data)
 
+    db.session.commit()
+
     return jsonify(exercise.to_dict())
 
 
 @bp.route('/exercises/<int:id>', methods=['DELETE'])
 def delete_exercise(id):
-    pass
+    ex = Exercise.query.get_or_404(id)
 
+    ex.deleted = True
+    ex.deleted_date = datetime.utcnow()
+
+    db.session.commit()
+
+    return jsonify(ex.to_dict())
 
 @bp.route('/exercises/<int:id>/sets', methods=['GET'])
 def get_exercise_sets(id):
