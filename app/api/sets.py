@@ -11,13 +11,13 @@ setSchema = SetSchema()
 
 
 @bp.route('/sets/<int:id>', methods=['GET'])
-@token_auth.login_required
+#token_auth.login_required
 def get_set(id):
     return jsonify(Set.query.get_or_404(id).to_dict())
 
 
 @bp.route('/sets', methods=['GET'])
-@token_auth.login_required
+#token_auth.login_required
 def get_sets():
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 100)
@@ -28,7 +28,7 @@ def get_sets():
 
 
 @bp.route('/sets', methods=['POST'])
-@token_auth.login_required
+#token_auth.login_required
 def create_set():
 
     data = request.get_json() or {}
@@ -50,7 +50,7 @@ def create_set():
 
 
 @bp.route('/sets/<int:id>', methods=['PUT'])
-@token_auth.login_required
+#token_auth.login_required
 def update_set(id):
     
     data = request.get_json() or {}
@@ -66,7 +66,7 @@ def update_set(id):
     return jsonify(set.to_dict())
 
 @bp.route('sets/<int:id>', methods=['DELETE'])
-@token_auth.login_required
+#token_auth.login_required
 def delete_set(id):
     s = Set.query.get_or_404(id)
 

@@ -11,12 +11,12 @@ from datetime import datetime
 sessionSchema = SessionSchema()
 
 @bp.route('/sessions/<int:id>', methods=['GET'])
-@token_auth.login_required
+#token_auth.login_required
 def get_session(id):
     return jsonify(Session.query.get_or_404(id).to_dict())
 
 @bp.route('/sessions', methods=['GET'])
-@token_auth.login_required
+#token_auth.login_required
 def get_sessions():
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 100)
@@ -26,7 +26,7 @@ def get_sessions():
     return jsonify(data)
 
 @bp.route('/sessions', methods=['POST'])
-@token_auth.login_required
+#token_auth.login_required
 def create_session():
     data = request.get_json() or {}
     errors = sessionSchema.validate(data)
@@ -46,7 +46,7 @@ def create_session():
     return response
 
 @bp.route('/sessions/<int:id>', methods=['PUT'])
-@token_auth.login_required
+#token_auth.login_required
 def update_session(id):
     data = request.get_json() or {}
     errors = sessionSchema.validate(data)
@@ -61,7 +61,7 @@ def update_session(id):
     return jsonify(s.to_dict())
 
 @bp.route('/sessions/<int:id>', methods=['DELETE'])
-@token_auth.login_required
+#token_auth.login_required
 def delete_session(id):
     s = Session.query.get_or_404(id)
 
@@ -72,16 +72,16 @@ def delete_session(id):
 
     return jsonify(s.to_dict())
 @bp.route('/sessions/<int:id>/exercises', methods=['GET'])
-@token_auth.login_required
+#token_auth.login_required
 def get_session_exercises(id):
     pass
 
 @bp.route('/sessions/<int:id>', methods=['POST', 'PUT'])
-@token_auth.login_required
+#token_auth.login_required
 def add_session_exercise(id):
     pass
 
 @bp.route('/sessions/<int:session_id>/<int:exercise_id>', methods=['DELETE', 'PUT'])
-@token_auth.login_required
+#token_auth.login_required
 def remove_session_exercise(session_id, exercise_id):
     pass

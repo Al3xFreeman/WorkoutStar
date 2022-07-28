@@ -11,13 +11,13 @@ routineSchema = RoutineSchema()
 
 
 @bp.route('/routines/<int:id>', methods=['GET'])
-@token_auth.login_required
+#token_auth.login_required
 def get_routine(id):
     return jsonify(Routine.query.get_or_404(id).to_dict())
 
 
 @bp.route('/routines', methods=['GET'])
-@token_auth.login_required
+#token_auth.login_required
 def get_routines():
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 100)
@@ -27,7 +27,7 @@ def get_routines():
     return jsonify(data)
 
 @bp.route('/routines', methods=['POST'])
-@token_auth.login_required
+#token_auth.login_required
 def create_routine():
     
     data = request.get_json() or {}
@@ -48,7 +48,7 @@ def create_routine():
     return response
 
 @bp.route('/routines/<int:id>', methods=['PUT'])
-@token_auth.login_required
+#token_auth.login_required
 def update_routine(id):
     
     # TODO: Make policy for who can modify what resource
@@ -69,7 +69,7 @@ def update_routine(id):
     return jsonify(r.to_dict())
 
 @bp.route('/routines/<int:id>', methods=['DELETE'])
-@token_auth.login_required
+#token_auth.login_required
 def delete_routine(id):
     r = Routine.query.get_or_404(id)
 
@@ -82,7 +82,7 @@ def delete_routine(id):
     
 """
 @bp.route('/routines/<int:id>/sessions', methods=['GET'])
-@token_auth.login_required
+#token_auth.login_required
 def get_routine_sessions(id):
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 100)
@@ -94,17 +94,17 @@ def get_routine_sessions(id):
     return jsonify(data)
 """
 @bp.route('/routines/<int:routine_id>', methods=['POST', 'PUT'])
-@token_auth.login_required
+#token_auth.login_required
 def add_routine_session(id):
     pass
 
 @bp.route('/routines/<int:routine_id>/<int:session_id>', methods=['PUT', 'DELETE'])
-@token_auth.login_required
+#token_auth.login_required
 def remove_routine_session(routine_id, session_id):
     pass
 
 @bp.route('/routines/<int:id>/workouts', methods=['GET'])
-@token_auth.login_required
+#token_auth.login_required
 def get_routine_workouts(id):
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 100)

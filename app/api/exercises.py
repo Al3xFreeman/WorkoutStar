@@ -17,13 +17,13 @@ from datetime import datetime
 exerciseSchema = ExerciseSchema()
 
 @bp.route('/exercises/<int:id>', methods=['GET'])
-@token_auth.login_required
+#token_auth.login_required
 def get_exercise(id):
     return jsonify(Exercise.query.get_or_404(id).to_dict())
 
 
 @bp.route('/exercises', methods=['GET'])
-@token_auth.login_required
+#token_auth.login_required
 def get_exercises():
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 100)
@@ -34,7 +34,7 @@ def get_exercises():
 
 
 @bp.route('/exercises', methods=['POST'])
-@token_auth.login_required
+#token_auth.login_required
 def create_exercise():
 
     data = request.get_json() or {}
@@ -56,7 +56,7 @@ def create_exercise():
 
 
 @bp.route('/exercise/<int:id>', methods=['PUT'])
-@token_auth.login_required
+#token_auth.login_required
 def update_exercise(id):
     data = request.get_json() or {}
     errors = exerciseSchema.validate(data)
@@ -72,7 +72,7 @@ def update_exercise(id):
 
 
 @bp.route('/exercises/<int:id>', methods=['DELETE'])
-@token_auth.login_required
+#token_auth.login_required
 def delete_exercise(id):
     ex = Exercise.query.get_or_404(id)
 
@@ -84,7 +84,7 @@ def delete_exercise(id):
     return jsonify(ex.to_dict())
 
 @bp.route('/exercises/<int:id>/sets', methods=['GET'])
-@token_auth.login_required
+#token_auth.login_required
 def get_exercise_sets(id):
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 100)
