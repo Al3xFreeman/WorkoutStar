@@ -1,16 +1,21 @@
 from datetime import datetime, timedelta
+from email.policy import default
 from hashlib import md5
 from time import time
 from flask import current_app, url_for
 from flask_login import UserMixin
-from flask_sqlalchemy import Pagination
-from sqlalchemy import false
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 from app import db, login
 
 import base64
 import os
+
+class MetadataMixin(object):
+    deleted = db.Column(db.Boolean, default=False)
+    deleted_date = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime)
+    updated_at = db.Column(db.DateTime)
 
 class PaginatedAPIMixin(object):
 
@@ -36,7 +41,7 @@ class PaginatedAPIMixin(object):
 
 
 
-class User(PaginatedAPIMixin, UserMixin, db.Model):
+class User(MetadataMixin, PaginatedAPIMixin, UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(64), index = True, unique = True)
     email = db.Column(db.String(128), index = True, unique = True)
@@ -121,10 +126,11 @@ class User(PaginatedAPIMixin, UserMixin, db.Model):
             'username': self.username,
             'rutine_count': self.routines.count(),
             'session_count': self.sessions.count(),
+            'deleted': self.deleted,
             '_links': {
                 'self': url_for('api.get_user', id=self.id),
-                'routines': url_for('api.get_routines', id=self.id),
-                'sessions': url_for('api.get_sessions', id=self.id),
+                'user_routines': url_for('api.get_user_routines', id=self.id),
+                'user_sessions': url_for('api.get_user_sessions', id=self.id),
                 'avatar': self.avatar(avatar_size)
             }   
         }
@@ -151,7 +157,7 @@ def load_user(id):
 
 
 
-class Routine(db.Model):
+class Routine(MetadataMixin, PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     #session_id = db.Column(db.Integer, db.ForeignKey('session.id'))
@@ -161,9 +167,28 @@ class Routine(db.Model):
     def __repr__(self):
         return '<Routine Nº {}'.format(self.id) + (' assigned to user: {}>'.format(self.user.username) if self.user else '') + '>'
 
+    def to_dict(self):
+        data = {
+            'id': self.id,
+            'period' : self.period,
+            '_links': {
+                'self': url_for('api.get_routine', id=self.id),
+                'workouts': url_for('api.get_routine_workouts', id=self.id),
+                'user': url_for('api.get_user', id=self.user_id)
+            }
+        }
+    
+        return data
+
+    def from_dict(self, data):
+        for field in ['period', 'user_id']:
+            if field in data:
+                setattr(self, field, data[field])
+
+
 # Definition of workouts
 
-class Workout(db.Model):
+class Workout(MetadataMixin, PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     day = db.Column(db.Integer)
     name = db.Column(db.String(128))
@@ -173,6 +198,25 @@ class Workout(db.Model):
     # Session history
     sessions = db.relationship('Session', backref='workout', lazy='dynamic')
     
+    def to_dict(self):
+        data = {
+            'id': self.id,
+            'day' : self.day,
+            'name' : self.name,
+            'number_of_sessions': self.sessions.count(),
+            '_links': {
+                'self': url_for('api.get_workout', id=self.id),
+                #'goal_exercises': url_for('api.get_workout_goal_exercises', id=self.id),
+                'sessions' : url_for('api.get_workout_sessions', id=self.id)
+            }
+        }
+    
+        return data
+
+    def from_dict(self, data):
+        for field in ['day', 'name']:
+            if field in data:
+                setattr(self, field, data[field])
 
 class GoalExercise(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -192,7 +236,7 @@ class GoalExercise(db.Model):
 
 
 
-class ExerciseDef(db.Model):
+class ExerciseDef(MetadataMixin, PaginatedAPIMixin, db.Model):
     __tablename__ = 'exercise_def'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -200,9 +244,26 @@ class ExerciseDef(db.Model):
     description = db.Column(db.String(256))
     exercises = db.relationship('Exercise', backref='exercise_def', lazy='dynamic')
 
-# Active Session 
+    def to_dict(self):
+        data = {
+            'id': self.id,
+            'name' : self.name,
+            'description' : self.description,
+            '_links': {
+                'self': url_for('api.get_exerciseDef', id=self.id),
+                'exercises': url_for('api.get_exerciseDef_exercises', id=self.id)
+            }
+        }
+    
+        return data
 
-class Session(db.Model):
+    def from_dict(self, data):
+        for field in ['name', 'description']:
+            if field in data:
+                setattr(self, field, data[field])
+
+
+class Session(MetadataMixin, PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     date = db.Column(db.DateTime, index = True, nullable = True, default = datetime.utcnow)
     exercises = db.relationship('Exercise', backref='session', lazy='dynamic')
@@ -212,9 +273,28 @@ class Session(db.Model):
     def __repr__(self):
         return '<Session Nº {}, with {} exercises, assigned to user: {}'.format(self.id, self.exercises.count(), self.user.username) + '>'
 
+    def to_dict(self):
+        data = {
+            'id': self.id,
+            'date' : self.date,
+            'number of exercises': self.exercises.count(),
+            '_links': {
+                'self': url_for('api.get_session', id=self.id),
+                'workout': url_for('api.get_workout', id=self.workout_id) if self.workout_id else None,
+                'user': url_for('api.get_user', id=self.user_id),
+                'exercises': url_for('api.get_session_exercises', id=self.id)
+            }
+        }
+    
+        return data
+
+    def from_dict(self, data):
+        for field in ['date', 'user_id', 'workout_id']:
+            if field in data:
+                setattr(self, field, data[field])
 
 
-class Exercise(db.Model):
+class Exercise(MetadataMixin, PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     session_id = db.Column(db.Integer, db.ForeignKey('session.id'))
     goal_exercise_id = db.Column(db.Integer, db.ForeignKey('goal_exercise.id'))
@@ -229,7 +309,48 @@ class Exercise(db.Model):
     def __repr__(self):
         return '<Exercise Nº {} with name {}, DONE = '.format(self.id, self.name) + ('Yes' if self.done else 'No') + '>'
 
-class Set(db.Model):
+    def to_dict(self):
+        data = {
+            'id': self.id,
+            'name' : self.name,
+            'done' : self.done,
+            'duration' : self.duration,
+            'timestamp' : self.timestamp,
+            'number_of_sets': self.sets.count(),
+            'total_stats': self.sets_info(),
+            '_links': {
+                'self': url_for('api.get_routine', id=self.id),
+                'session': url_for('api.get_session', id=self.session_id),
+                'goal_exercise_id': url_for('api.get_goal_exercise', id=self.goal_exercise_id) if self.goal_exercise_id else None,
+                'exerciseDef': url_for('api.get_exerciseDef', id=self.exercise_def_id),
+                'sets':url_for('api.get_exercise_sets', id=self.id)
+            }
+        }
+    
+        return data
+
+    def from_dict(self, data):
+        for field in ['period', 'user_id']:
+            if field in data:
+                setattr(self, field, data[field])
+
+    def sets_info(self):
+        data = {}
+        for set in self.sets:
+            for key, value in set.set_info().items():
+                if value is not None:
+                    if key not in data:
+                        data[key] = value
+                    else:
+                        data[key] += value
+        
+        
+        print(data)
+        return data
+
+
+
+class Set(MetadataMixin, PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     exercise_id = db.Column(db.Integer, db.ForeignKey('exercise.id'))
     weight = db.Column(db.Integer)
@@ -237,3 +358,28 @@ class Set(db.Model):
 
     def __repr__(self):
         return '<Set Nº {}, weight lifted: {}, reps done: {}>'.format(self.id, self.weight, self.reps)
+
+    def set_info(self):
+        return {
+            'weight': self.weight if self.weight else None,
+            'reps': self.reps if self.reps else None
+        }
+
+    def to_dict(self):
+        data = {
+            'id': self.id,
+            'exercise_id' : self.exercise_id,
+            'weight': self.weight,
+            'reps':self.reps,
+            '_links': {
+                'self': url_for('api.get_set', id=self.id),
+                'exercise': url_for('api.get_exercise', id=self.exercise_id)
+            }
+        }
+    
+        return data
+
+    def from_dict(self, data):
+        for field in ['exercise_id', 'weight', 'reps']:
+            if field in data:
+                setattr(self, field, data[field])
