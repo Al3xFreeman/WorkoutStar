@@ -64,8 +64,8 @@ def update_set(id):
 def delete_set(id):
     s = Set.query.get_or_404(id)
 
-    w.deleted = True
-    w.deleted_date = datetime.utcnow()
+    s.deleted = True
+    s.deleted_date = datetime.utcnow()
 
     db.session.commit()
 
