@@ -5,11 +5,12 @@ from app.api import bp
 from app.api.errors import bad_request
 from app.api.auth import token_auth
 from flask import jsonify
-from app.model_schemas import UserCreationSchema
+from app.model_schemas import UserCreationSchema, UserUpdateSchema
 from app.models import User, Routine, Session
 from flask import request, url_for
 
 userCreationSchema = UserCreationSchema()
+userUpdateSchema = UserUpdateSchema()
 
 @bp.route('/users/<int:id>', methods=['GET'])
 @token_auth.login_required
@@ -27,7 +28,6 @@ def get_users():
     return jsonify(data)
 
 @bp.route('/users', methods=['POST'])
-@token_auth.login_required
 def create_user():
 
     data = request.get_json() or {}
@@ -51,10 +51,10 @@ def create_user():
 @token_auth.login_required
 def update_user(id):
     if token_auth.current_user().id != id:
-        abort(403)
+        return bad_request("User you tried to modify isn't the one logged in!")
 
     data = request.get_json() or {}
-    errors = userCreationSchema.validate(data)
+    errors = userUpdateSchema.validate(data)
     if errors:
         return bad_request(errors)
 
@@ -71,6 +71,9 @@ def update_user(id):
 @token_auth.login_required
 def delete_user(id):
     u = User.query.get_or_404(id)
+
+    if(u.deleted):
+        return bad_request("User doesn't exists")
 
     u.deleted = True
     u.deleted_date = datetime.utcnow()

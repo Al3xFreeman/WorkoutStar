@@ -126,6 +126,7 @@ class User(MetadataMixin, PaginatedAPIMixin, UserMixin, db.Model):
             'username': self.username,
             'rutine_count': self.routines.count(),
             'session_count': self.sessions.count(),
+            'deleted': self.deleted,
             '_links': {
                 'self': url_for('api.get_user', id=self.id),
                 'user_routines': url_for('api.get_user_routines', id=self.id),

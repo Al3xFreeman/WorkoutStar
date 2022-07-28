@@ -1,13 +1,39 @@
 from dataclasses import Field
 from email.policy import strict
+from lib2to3.pgen2 import token
 from operator import length_hint
 from typing_extensions import Required
 from wsgiref import validate
-from marshmallow import Schema, fields, validates, ValidationError
-from marshmallow.validate import Range, Length
+from marshmallow import Schema, fields, validates, ValidationError, post_dump
+from marshmallow.validate import Range, Length, And, Equal
 from pkg_resources import require
 from app.models import User, Routine, Session, ExerciseDef, Exercise
+from app.api.auth import token_auth
 
+
+class UserUpdateSchema(Schema):
+    username = fields.Str(required=False)
+    email = fields.Email(required=False)
+
+    @validates('email')
+    def check_email(self, email):
+        if len(email) < 3 or len(email) > 128:
+            raise ValidationError('The email length must be up to 128 characters long')
+        
+        if email != token_auth.current_user().email:
+            u = User.query.filter_by(email=email).first()
+            if u:
+                raise ValidationError("Email is not valid") 
+            
+
+    @validates('username')
+    def check_username(self, username):
+        if len(username) < 3 or len(username) > 64:
+            raise ValidationError('The username length must be between 3 and 64 characters long')
+        if username != token_auth.current_user().username:
+            u = User.query.filter_by(username=username).first()
+            if u:
+                raise ValidationError("Username is not valid") 
 
 class UserCreationSchema(Schema):
     username = fields.Str(required=True, validate=Length(3, 64, error='The username length must be between {min} and {max} characters long'))
@@ -15,10 +41,29 @@ class UserCreationSchema(Schema):
     password = fields.String(required=True)
     
 
-    #Custom validation for passwrod, so we can perform regex to check for it's security
+    #Custom validation for password, so we can perform regex to check for it's security
     @validates('password')
     def check_password(self, password):
         pass
+
+    @validates('email')
+    def check_email(self, email):
+        if len(email) < 3 or len(email) > 128:
+            raise ValidationError('The email length must be up to 128 characters long')
+        
+        u = User.query.filter_by(email=email).first()
+        if u:
+            raise ValidationError("Email is not valid") 
+            
+
+    @validates('username')
+    def check_username(self, username):
+        if len(username) < 3 or len(username) > 64:
+            raise ValidationError('The username length must be between 3 and 64 characters long')
+
+        u = User.query.filter_by(username=username).first()
+        if u:
+            raise ValidationError("Username is not valid") 
 
 
 class RoutineSchema(Schema):
