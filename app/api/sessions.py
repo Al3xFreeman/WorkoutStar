@@ -11,7 +11,7 @@ from datetime import datetime
 sessionSchema = SessionSchema()
 
 @bp.route('/sessions/<int:id>', methods=['GET'])
-#@token_auth.login_required
+@token_auth.login_required
 def get_session(id):
     return jsonify(Session.query.get_or_404(id).to_dict())
 

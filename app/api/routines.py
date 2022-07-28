@@ -11,13 +11,13 @@ routineSchema = RoutineSchema()
 
 
 @bp.route('/routines/<int:id>', methods=['GET'])
-#@token_auth.login_required
+@token_auth.login_required
 def get_routine(id):
     return jsonify(Routine.query.get_or_404(id).to_dict())
 
 
 @bp.route('/routines', methods=['GET'])
-#@token_auth.login_required
+@token_auth.login_required
 def get_routines():
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 100)
@@ -27,7 +27,7 @@ def get_routines():
     return jsonify(data)
 
 @bp.route('/routines', methods=['POST'])
-#@token_auth.login_required
+@token_auth.login_required
 def create_routine():
     
     data = request.get_json() or {}
@@ -48,7 +48,7 @@ def create_routine():
     return response
 
 @bp.route('/routines/<int:id>', methods=['PUT'])
-#@token_auth.login_required
+@token_auth.login_required
 def update_routine(id):
     
     # TODO: Make policy for who can modify what resource
@@ -104,6 +104,7 @@ def remove_routine_session(routine_id, session_id):
     pass
 
 @bp.route('/routines/<int:id>/workouts', methods=['GET'])
+@token_auth.login_required
 def get_routine_workouts(id):
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 100)

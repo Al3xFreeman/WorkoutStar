@@ -14,12 +14,12 @@ from datetime import datetime
 workoutSchema = WorkoutSchema()
 
 @bp.route('/workouts/<int:id>', methods=['GET'])
-#@token_auth.login_required
+@token_auth.login_required
 def get_workout(id):
     return jsonify(Workout.query.get_or_404(id).to_dict())
 
 @bp.route('/workouts/<int:id>/sessions', methods=['GET'])
-#@token_auth.login_required
+@token_auth.login_required
 def get_workout_sessions(id):
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 100)
@@ -30,7 +30,7 @@ def get_workout_sessions(id):
     return jsonify(data)
 
 @bp.route('/workouts', methods=['GET'])
-#@token_auth.login_required
+@token_auth.login_required
 def get_workouts():
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 100)
@@ -40,6 +40,7 @@ def get_workouts():
     return jsonify(data)
 
 @bp.route('/workouts', methods=['POST'])
+@token_auth.login_required
 def create_workout():
     data = request.get_json() or {}
     errors = workoutSchema.validate(data)
@@ -59,6 +60,7 @@ def create_workout():
     return response
 
 @bp.route('/workouts/<int:id>', methods=['PUT'])
+@token_auth.login_required
 def update_workout(id):
     data = request.get_json() or {}
     errors = workoutSchema.validate(data)
@@ -72,6 +74,7 @@ def update_workout(id):
 
 
 @bp.route('/workouts/<int:id>', methods=['DELETE'])
+@token_auth.login_required
 def delete_workout(id):
     w = Workout.query.get_or_404(id)
 

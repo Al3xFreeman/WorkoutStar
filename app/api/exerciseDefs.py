@@ -5,16 +5,19 @@ from app.models import Exercise, ExerciseDef
 from app.api import bp
 from app import db
 from app.api.errors import bad_request
+from app.api.auth import token_auth
 from datetime import datetime
 
 exerciseDefSchema = ExerciseDefSchema()
 
 @bp.route('/exerciseDefs/<int:id>', methods=['GET'])
+@token_auth.login_required
 def get_exerciseDef(id):
     return jsonify(ExerciseDef.query.get_or_404(id).to_dict())
 
 
 @bp.route('/exerciseDefs', methods=['GET'])
+@token_auth.login_required
 def get_exerciseDefs():
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 100)
@@ -24,6 +27,7 @@ def get_exerciseDefs():
     return jsonify(data)
 
 @bp.route('/exerciseDefs', methods=['POST'])
+@token_auth.login_required
 def create_exerciseDef():
 
     data = request.get_json() or {}
@@ -44,6 +48,7 @@ def create_exerciseDef():
     return response
 
 @bp.route('/exerciseDefs/<int:id>', methods=['PUT'])
+@token_auth.login_required
 def update_exerciseDef(id):
 
     data = request.get_json() or {}
@@ -61,6 +66,7 @@ def update_exerciseDef(id):
 
 
 @bp.route('/exerciseDefs/<int:id>', methods=['DELETE'])
+@token_auth.login_required
 def delete_exerciseDef(id):
     ex_def = ExerciseDef.query.get_or_404(id)
 
@@ -73,6 +79,7 @@ def delete_exerciseDef(id):
 
 
 @bp.route('/exerciseDefs/<int:id>/exercises', methods=['GET'])
+@token_auth.login_required
 def get_exerciseDef_exercises(id):
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 100)
