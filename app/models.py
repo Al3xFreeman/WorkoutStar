@@ -193,7 +193,7 @@ class Workout(MetadataMixin, PaginatedAPIMixin, db.Model):
     day = db.Column(db.Integer)
     name = db.Column(db.String(128))
     routine_id = db.Column(db.Integer, db.ForeignKey('routine.id'))
-    goal_exercises = db.relationship('GoalExercise', backref='workout', lazy='dynamic')
+    #goal_exercises = db.relationship('GoalExercise', backref='workout', lazy='dynamic')
 
     # Session history
     sessions = db.relationship('Session', backref='workout', lazy='dynamic')
@@ -219,6 +219,8 @@ class Workout(MetadataMixin, PaginatedAPIMixin, db.Model):
                 setattr(self, field, data[field])
 
 class GoalExercise(db.Model):
+    __tablename__ = "goal_exercise"
+
     id = db.Column(db.Integer, primary_key=True)
     exercise_id = db.Column(db.Integer, db.ForeignKey('exercise_def.id'))
     workout_id = db.Column(db.Integer, db.ForeignKey('workout.id'))
@@ -232,7 +234,8 @@ class GoalExercise(db.Model):
     duration_max = db.Column(db.Integer)
     duration_min = db.Column(db.Integer)
 
-    exercise_history = db.relationship('Exercise', backref='goal_exercise', lazy='dynamic')
+    #exercise_history = db.relationship('Exercise', backref='goal_exercise', lazy='dynamic')
+    exercise_id = db.Column(db.Integer, db.ForeignKey('exercise.id'))
 
 
 
@@ -304,7 +307,8 @@ class Exercise(MetadataMixin, PaginatedAPIMixin, db.Model):
     timestamp = db.Column(db.DateTime, index = True, default = datetime.utcnow)
     sets = db.relationship('Set', backref='exercise', lazy='dynamic')
 
-    exercise_def_id = db.Column(db.Integer, db.ForeignKey('exercise_def.id'))
+    #exercise_def_id = db.Column(db.Integer, db.ForeignKey('exercise_def.id'))
+    goal_exercise = db.relationship('GoalExercise', backref='exercise', lazy=False)
 
     def __repr__(self):
         return '<Exercise Nº {} with name {}, DONE = '.format(self.id, self.name) + ('Yes' if self.done else 'No') + '>'
