@@ -300,14 +300,14 @@ class Session(MetadataMixin, PaginatedAPIMixin, db.Model):
 class Exercise(MetadataMixin, PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
     session_id = db.Column(db.Integer, db.ForeignKey('session.id'))
-    goal_exercise_id = db.Column(db.Integer, db.ForeignKey('goal_exercise.id'))
+    #goal_exercise_id = db.Column(db.Integer, db.ForeignKey('goal_exercise.id'))
     name = db.Column(db.String(128))
     done = db.Column(db.Boolean)
     duration = db.Column(db.Integer)
     timestamp = db.Column(db.DateTime, index = True, default = datetime.utcnow)
     sets = db.relationship('Set', backref='exercise', lazy='dynamic')
 
-    #exercise_def_id = db.Column(db.Integer, db.ForeignKey('exercise_def.id'))
+    exercise_def_id = db.Column(db.Integer, db.ForeignKey('exercise_def.id'))
     goal_exercise = db.relationship('GoalExercise', backref='exercise', lazy=False)
 
     def __repr__(self):
@@ -325,7 +325,7 @@ class Exercise(MetadataMixin, PaginatedAPIMixin, db.Model):
             '_links': {
                 'self': url_for('api.get_routine', id=self.id),
                 'session': url_for('api.get_session', id=self.session_id),
-                'goal_exercise_id': url_for('api.get_goal_exercise', id=self.goal_exercise_id) if self.goal_exercise_id else None,
+                #'goal_exercise_id': url_for('api.get_goal_exercise', id=self.goal_exercise_id) if self.goal_exercise_id else None,
                 'exerciseDef': url_for('api.get_exerciseDef', id=self.exercise_def_id),
                 'sets':url_for('api.get_exercise_sets', id=self.id)
             }
@@ -349,7 +349,7 @@ class Exercise(MetadataMixin, PaginatedAPIMixin, db.Model):
                         data[key] += value
         
         
-        print(data)
+        #print(data)
         return data
 
 

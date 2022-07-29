@@ -1,7 +1,7 @@
 """
 
 db.session.query(ExerciseDef.name, db.func.count(distinct(Exercise.id)), db.func.sum(Set.weight), db.func.sum(Set.reps)).join(Exercise, ExerciseDef.id == Exercise.exercise_def_id).join(Session, Session.id == Exercise.session_id).join(User, User.id ==Session.user_id).outerjoin(Set, Set.exercise_id == Exercise.id).group_by(ExerciseDef.id).filter(User.id==1, Exercise.done==True).all()
-
+db.session.query(ExerciseDef.name, db.func.count(Exercise.id)).filter(Exercise.session_id == Session.id).filter(Session.user_id == 1).filter(Exercise.exercise_def_id == ExerciseDef.id).filter(Set.exercise_id == Exercise.id).group_by(ExerciseDef.id).all()
 """
 
 from flask import jsonify, request, url_for

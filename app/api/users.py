@@ -1,13 +1,14 @@
 from datetime import datetime
-from os import abort
+import json
 from app import db
 from app.api import bp
 from app.api.errors import bad_request
 from app.api.auth import token_auth
 from flask import jsonify
 from app.model_schemas import UserCreationSchema, UserUpdateSchema
-from app.models import User, Routine, Session
+from app.models import ExerciseDef, User, Routine, Session, Exercise, Set
 from flask import request, url_for
+from sqlalchemy import distinct
 
 userCreationSchema = UserCreationSchema()
 userUpdateSchema = UserUpdateSchema()
@@ -106,3 +107,36 @@ def get_user_sessions(id):
     data = Session.to_collection_dict(u.sessions, page, per_page, 'api.get_sessions')
 
     return jsonify(data)
+
+@bp.route('/users/<int:id>/exercises', methods=['GET'])
+def get_user_exercises(id):
+    page = request.args.get('page', 1, type=int)
+    per_page = min(request.args.get('per_page', 10, type=int), 100)
+
+    ex_list = db.session.query(Exercise).filter(Exercise.session_id == Session.id).filter(Session.user_id == id).filter(Exercise.exercise_def_id == ExerciseDef.id).groupby(ExerciseDef.id)
+
+    data = Exercise.to_collection_dict(ex_list, page, per_page, 'api.get_exercises')
+    print(len(ex_list.all()))
+    #data['data'] = 
+
+    return jsonify(data)
+
+@bp.route('/users/<int:id>/exercise_data', methods=['GET'])
+def get_user_exercise_data(id):
+
+    exercise = request.args.get("exercise")
+    if exercise:
+        if not ExerciseDef.query.filter_by(name=exercise).first():
+            return bad_request("Provided exercise doesn't exist")
+        data = db.session.query(ExerciseDef.name, db.func.count(distinct(Exercise.id)), db.func.sum(Set.weight), db.func.sum(Set.reps)).filter(Exercise.session_id == Session.id).filter(Session.user_id == 1).filter(Exercise.exercise_def_id == ExerciseDef.id).filter(Set.exercise_id == Exercise.id).filter(ExerciseDef.name == exercise).all()
+    else:    
+        data = db.session.query(ExerciseDef.name, db.func.count(distinct(Exercise.id)), db.func.sum(Set.weight), db.func.sum(Set.reps)).filter(Exercise.session_id == Session.id).filter(Session.user_id == 1).filter(Exercise.exercise_def_id == ExerciseDef.id).filter(Set.exercise_id == Exercise.id).group_by(ExerciseDef.id).all()
+    print(type(data))
+    data_dict = {}
+    for elem in data:
+        tmp = {}
+        tmp['Number of exercises:'] = elem[1]
+        tmp['Total weight'] = elem[2]
+        tmp['Total reps'] = elem[3]
+        data_dict[elem[0]] = tmp
+    return data_dict
