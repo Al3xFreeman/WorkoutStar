@@ -2,7 +2,7 @@ from app import db, create_app
 from app.models import *
 import random
 from config import Config
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class Regenerate(object):
     number_mock_users = 0
@@ -53,7 +53,8 @@ class Regenerate(object):
             routine_id = random.randint(1, self.number_routines)
 
             r = Routine.query.get(routine_id)
-            workout = Workout(day=random.randint(0,7), name="Test Workout {}".format(i))
+            date = datetime.utcnow() + timedelta(days=random.randint(0,30))
+            workout = Workout(due_date=date, name="Test Workout {}".format(i))
 
             r.workouts.append(workout)
 

@@ -1,15 +1,14 @@
-import json
-from os import abort
-from urllib import response
 from app import db
 from app.api import bp
 from app.api.errors import bad_request
 from app.api.auth import token_auth
 from flask import jsonify
-from app.models import Workout, Session
+from app.models import Workout, ExerciseDef, User, Routine, Session, Exercise, Set
 from flask import request, url_for
 from app.model_schemas import WorkoutSchema
 from datetime import datetime
+from sqlalchemy import distinct
+
 
 workoutSchema = WorkoutSchema()
 
@@ -84,3 +83,28 @@ def delete_workout(id):
     db.session.commit()
 
     return jsonify(w.to_dict())
+
+
+@bp.route('/workouts/<int:id>/exercises')
+def get_workout_exercises(id):
+    workout = Workout.query.get_or_404(id)
+    page = request.args.get('page', 1, type=int)
+    per_page = min(request.args.get('per_page', 10, type=int), 100)
+    query = db.session.query(Exercise).filter(Exercise.session_id == Session.id).filter(Workout.id == Session.workout_id).filter(Workout.id == id)
+    data = Exercise.to_collection_dict(query, page, per_page, 'api.get_exercises')
+
+    return jsonify(data)
+    
+@bp.route('/workouts/<int:id>/exercises/data')
+def get_workout_exercises_data(id):
+    workout = Workout.query.get_or_404(id)
+    
+    data = db.session.query(ExerciseDef.name, db.func.count(distinct(Exercise.id)), db.func.sum(Set.weight), db.func.sum(Set.reps)).filter(Workout.id == id).filter(Session.workout_id == Workout.id).filter(Exercise.session_id == Session.id).filter(Set.exercise_id == Exercise.id).filter(Exercise.exercise_def_id == ExerciseDef.id).group_by(ExerciseDef.id).all()
+    data_dict = {}
+    for elem in data:
+        tmp = {}
+        tmp['Number of exercises:'] = elem[1]
+        tmp['Total weight'] = elem[2]
+        tmp['Total reps'] = elem[3]
+        data_dict[elem[0]] = tmp
+    return data_dict

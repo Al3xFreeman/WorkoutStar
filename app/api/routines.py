@@ -114,3 +114,11 @@ def get_routine_workouts(id):
     data = Workout.to_collection_dict(r.workouts, page, per_page, 'api.get_workouts')
 
     return jsonify(data)
+
+
+@bp.route('/routines/<int:id>/extended')
+def get_routine_info_extended(id):
+    routine = Routine.query.get_or_404(id)
+
+    data = routine.to_dict()
+    #data['workouts'] = 

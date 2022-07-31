@@ -128,10 +128,10 @@ def get_user_exercise_data(id):
     if exercise:
         if not ExerciseDef.query.filter_by(name=exercise).first():
             return bad_request("Provided exercise doesn't exist")
-        data = db.session.query(ExerciseDef.name, db.func.count(distinct(Exercise.id)), db.func.sum(Set.weight), db.func.sum(Set.reps)).filter(Exercise.session_id == Session.id).filter(Session.user_id == 1).filter(Exercise.exercise_def_id == ExerciseDef.id).filter(Set.exercise_id == Exercise.id).filter(ExerciseDef.name == exercise).all()
+        data = db.session.query(ExerciseDef.name, db.func.count(distinct(Exercise.id)), db.func.sum(Set.weight), db.func.sum(Set.reps)).filter(Exercise.session_id == Session.id).filter(Session.user_id == id).filter(Exercise.exercise_def_id == ExerciseDef.id).filter(Set.exercise_id == Exercise.id).filter(ExerciseDef.name == exercise).all()
     else:    
-        data = db.session.query(ExerciseDef.name, db.func.count(distinct(Exercise.id)), db.func.sum(Set.weight), db.func.sum(Set.reps)).filter(Exercise.session_id == Session.id).filter(Session.user_id == 1).filter(Exercise.exercise_def_id == ExerciseDef.id).filter(Set.exercise_id == Exercise.id).group_by(ExerciseDef.id).all()
-    print(type(data))
+        data = db.session.query(ExerciseDef.name, db.func.count(distinct(Exercise.id)), db.func.sum(Set.weight), db.func.sum(Set.reps)).filter(Exercise.session_id == Session.id).filter(Session.user_id == id).filter(Exercise.exercise_def_id == ExerciseDef.id).filter(Set.exercise_id == Exercise.id).group_by(ExerciseDef.id).all()
+    #print(type(data))
     data_dict = {}
     for elem in data:
         tmp = {}

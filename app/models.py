@@ -190,7 +190,7 @@ class Routine(MetadataMixin, PaginatedAPIMixin, db.Model):
 
 class Workout(MetadataMixin, PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True)
-    day = db.Column(db.Integer)
+    due_date = db.Column(db.DateTime)
     name = db.Column(db.String(128))
     routine_id = db.Column(db.Integer, db.ForeignKey('routine.id'))
     #goal_exercises = db.relationship('GoalExercise', backref='workout', lazy='dynamic')
@@ -201,7 +201,7 @@ class Workout(MetadataMixin, PaginatedAPIMixin, db.Model):
     def to_dict(self):
         data = {
             'id': self.id,
-            'day' : self.day,
+            'due_date' : self.due_date,
             'name' : self.name,
             'number_of_sessions': self.sessions.count(),
             '_links': {
@@ -210,11 +210,11 @@ class Workout(MetadataMixin, PaginatedAPIMixin, db.Model):
                 'sessions' : url_for('api.get_workout_sessions', id=self.id)
             }
         }
-    
+
         return data
 
     def from_dict(self, data):
-        for field in ['day', 'name']:
+        for field in ['due_date', 'name']:
             if field in data:
                 setattr(self, field, data[field])
 
@@ -308,6 +308,7 @@ class Exercise(MetadataMixin, PaginatedAPIMixin, db.Model):
     sets = db.relationship('Set', backref='exercise', lazy='dynamic')
 
     exercise_def_id = db.Column(db.Integer, db.ForeignKey('exercise_def.id'))
+
     goal_exercise = db.relationship('GoalExercise', backref='exercise', lazy=False)
 
     def __repr__(self):
@@ -322,6 +323,7 @@ class Exercise(MetadataMixin, PaginatedAPIMixin, db.Model):
             'timestamp' : self.timestamp,
             'number_of_sets': self.sets.count(),
             'total_stats': self.sets_info(),
+            'exercise_name': self.exercise_def.name,
             '_links': {
                 'self': url_for('api.get_routine', id=self.id),
                 'session': url_for('api.get_session', id=self.session_id),

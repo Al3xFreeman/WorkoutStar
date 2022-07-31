@@ -4,9 +4,10 @@ from app.api import bp
 from app.api.auth import token_auth
 from app.api.errors import bad_request
 from app.model_schemas import SessionSchema
-from app.models import Exercise, Session
+from app.models import Exercise, Session, ExerciseDef, Set
 from flask import jsonify, request, url_for
 from datetime import datetime
+from sqlalchemy import distinct
 
 sessionSchema = SessionSchema()
 
@@ -74,7 +75,27 @@ def delete_session(id):
 @bp.route('/sessions/<int:id>/exercises', methods=['GET'])
 @token_auth.login_required
 def get_session_exercises(id):
-    pass
+    session = Session.query.get_or_404(id)
+    page = request.args.get('page', 1, type=int)
+    per_page = min(request.args.get('per_page', 10, type=int), 100)
+
+    data = Exercise.to_collection_dict(session.exercises, page, per_page, 'api.get_exercises')
+    return jsonify(data)
+
+@bp.route('/sessions/<int:id>/exercises/data', methods=['GET'])
+@token_auth.login_required
+def get_session_exercises_data(id):
+    session = Session.query.get_or_404(id)
+    data = db.session.query(ExerciseDef.name, db.func.count(distinct(Exercise.id)), db.func.sum(Set.weight), db.func.sum(Set.reps)).filter(Exercise.session_id == id).filter(Exercise.exercise_def_id == ExerciseDef.id).filter(Set.exercise_id == Exercise.id).group_by(ExerciseDef.id).all()    
+    data_dict = {}
+    for elem in data:
+        tmp = {}
+        tmp['Number of exercises:'] = elem[1]
+        tmp['Total weight'] = elem[2]
+        tmp['Total reps'] = elem[3]
+        data_dict[elem[0]] = tmp
+    return data_dict
+
 
 @bp.route('/sessions/<int:id>', methods=['POST', 'PUT'])
 @token_auth.login_required
