@@ -13,7 +13,7 @@ from app.model_schemas import ExerciseSchema
 from app.models import Exercise
 from app import db
 from datetime import datetime
-
+from app.api.query_helpers import *
 
 exerciseSchema = ExerciseSchema()
 
@@ -28,8 +28,9 @@ def get_exercise(id):
 def get_exercises():
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 100)
-
-    data = Exercise.to_collection_dict(Exercise.query, page, per_page, 'api.get_exercises')
+    start = request.args.get('from', datetime.min, type=datetime)
+    end = request.args.get('to', datetime.utcnow(), type=datetime)
+    data = Exercise.to_collection_dict(helper_date(Exercise.query, Exercise, start=start, end=end), page, per_page, 'api.get_exercises')
 
     return jsonify(data)
 
@@ -91,6 +92,6 @@ def get_exercise_sets(id):
     per_page = min(request.args.get('per_page', 10, type=int), 100)
 
     ex = Exercise.query.get_or_404(id)
-    data = Exercise.to_collection_dict(ex.sets, page, per_page, 'api.get_sets')
+    data = Exercise.to_collection_dict(helper_date(ex.sets), page, per_page, 'api.get_sets')
 
     return data
