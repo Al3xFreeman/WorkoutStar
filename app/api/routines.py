@@ -6,6 +6,7 @@ from app.models import Routine, User, Workout
 from flask import jsonify, request, url_for
 from app.model_schemas import RoutineSchema
 from datetime import datetime
+from app.api.workouts import get_workout_exercises_data
 
 routineSchema = RoutineSchema()
 
@@ -120,5 +121,17 @@ def get_routine_workouts(id):
 def get_routine_info_extended(id):
     routine = Routine.query.get_or_404(id)
 
-    data = routine.to_dict()
+    data = {}
+
+    r_works = routine.workouts.all()
+    for workout in r_works:
+        w_data = get_workout_exercises_data(workout.id)
+        for key, value in w_data.items():
+            if key not in data:
+                data[key] = value
+            else:
+                for key_1, value_1 in value.items():
+                    data[key][key_1] += value_1
+
     #data['workouts'] = 
+    return data
