@@ -6,9 +6,9 @@ from app.api.errors import bad_request
 from app.model_schemas import SessionSchema
 from app.models import Exercise, Session, ExerciseDef, Set
 from flask import jsonify, request, url_for
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy import distinct
-
+import app.api.helpers as helpers
 sessionSchema = SessionSchema()
 
 @bp.route('/sessions/<int:id>', methods=['GET'])
@@ -19,10 +19,11 @@ def get_session(id):
 @bp.route('/sessions', methods=['GET'])
 @token_auth.login_required
 def get_sessions():
-    page = request.args.get('page', 1, type=int)
-    per_page = min(request.args.get('per_page', 10, type=int), 100)
-
-    data = Session.to_collection_dict(Session.query, page, per_page, 'api.get_sessions')
+    page, per_page = helpers.get_pagination()
+    start, end = helpers.get_date_range()
+    query = helpers.helper_date(Session.query , Session, start, end)
+    
+    data = Session.to_collection_dict(query, page, per_page, 'api.get_sessions')
 
     return jsonify(data)
 
@@ -76,17 +77,24 @@ def delete_session(id):
 @token_auth.login_required
 def get_session_exercises(id):
     session = Session.query.get_or_404(id)
-    page = request.args.get('page', 1, type=int)
-    per_page = min(request.args.get('per_page', 10, type=int), 100)
+    page, per_page = helpers.get_pagination()
+    start, end = helpers.get_date_range()
 
-    data = Exercise.to_collection_dict(session.exercises, page, per_page, 'api.get_exercises')
+    query = helpers.helper_date(session.exercises , Exercise, start, end)
+    
+    data = Exercise.to_collection_dict(query, page, per_page, 'api.get_exercises')
+
     return jsonify(data)
 
 @bp.route('/sessions/<int:id>/exercises/data', methods=['GET'])
 @token_auth.login_required
 def get_session_exercises_data(id):
     session = Session.query.get_or_404(id)
-    data = db.session.query(ExerciseDef.name, db.func.count(distinct(Exercise.id)), db.func.sum(Set.weight), db.func.sum(Set.reps)).filter(Exercise.session_id == id).filter(Exercise.exercise_def_id == ExerciseDef.id).filter(Set.exercise_id == Exercise.id).group_by(ExerciseDef.id).all()    
+    start, end = helpers.get_date_range()
+
+    q = db.session.query(ExerciseDef.name, db.func.count(distinct(Exercise.id)), db.func.sum(Set.weight), db.func.sum(Set.reps)).filter(Exercise.session_id == id).filter(Exercise.exercise_def_id == ExerciseDef.id).filter(Set.exercise_id == Exercise.id).group_by(ExerciseDef.id)
+    data = helpers.helper_date(q, Exercise, start, end).all()
+
     data_dict = {}
     for elem in data:
         tmp = {}

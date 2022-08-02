@@ -7,6 +7,7 @@ from app import db
 from app.api.errors import bad_request
 from app.api.auth import token_auth
 from datetime import datetime
+import app.api.helpers as helpers
 
 exerciseDefSchema = ExerciseDefSchema()
 
@@ -19,11 +20,11 @@ def get_exerciseDef(id):
 @bp.route('/exerciseDefs', methods=['GET'])
 @token_auth.login_required
 def get_exerciseDefs():
-    page = request.args.get('page', 1, type=int)
-    per_page = min(request.args.get('per_page', 10, type=int), 100)
-
-    data = ExerciseDef.to_collection_dict(ExerciseDef.query, page, per_page, 'api.get_exerciseDefs')
-
+    page, per_page = helpers.get_pagination()
+    start, end = helpers.get_date_range()
+    query = helpers.helper_date(ExerciseDef.query , ExerciseDef, start, end)
+    
+    data = ExerciseDef.to_collection_dict(query, page, per_page, 'api.get_exerciseDefs')
     return jsonify(data)
 
 @bp.route('/exerciseDefs', methods=['POST'])
@@ -81,10 +82,12 @@ def delete_exerciseDef(id):
 @bp.route('/exerciseDefs/<int:id>/exercises', methods=['GET'])
 @token_auth.login_required
 def get_exerciseDef_exercises(id):
-    page = request.args.get('page', 1, type=int)
-    per_page = min(request.args.get('per_page', 10, type=int), 100)
-
+    page, per_page = helpers.get_pagination()
+    start, end = helpers.get_date_range()
     ex_def = ExerciseDef.query.get_or_404(id)
-    data = ExerciseDef.to_collection_dict(ex_def.exercises, page, per_page, 'api.get_exercises')
+
+    query = helpers.helper_date(ex_def.exercises, Exercise, start, end)
+    
+    data = ExerciseDef.to_collection_dict(query, page, per_page, 'api.get_exercises')
 
     return data

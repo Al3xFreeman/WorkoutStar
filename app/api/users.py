@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 from app import db
-from app.api import bp
+from app.api import bp, helpers
 from app.api.errors import bad_request
 from app.api.auth import token_auth
 from flask import jsonify
@@ -21,11 +21,12 @@ def get_user(id):
 @bp.route('/users', methods=['GET'])
 @token_auth.login_required
 def get_users():
-    page = request.args.get('page', 1, type=int)
-    per_page = min(request.args.get('per_page', 10, type=int), 100)
+    page, per_page = helpers.get_pagination()
+    start, end = helpers.get_date_range()
 
-    data = User.to_collection_dict(User.query, page, per_page, 'api.get_users')
+    query = helpers.helper_date(User.query, User, start, end)
 
+    data = Session.to_collection_dict(query, page, per_page, 'api.get_users')
     return jsonify(data)
 
 @bp.route('/users', methods=['POST'])
@@ -87,35 +88,39 @@ def delete_user(id):
 @bp.route('/users/<int:id>/routines', methods=['GET'])
 @token_auth.login_required
 def get_user_routines(id):
-    page = request.args.get('page', 1, type=int)
-    per_page = min(request.args.get('per_page', 10, type=int), 100)
+
+    page, per_page = helpers.get_pagination()
+    start, end = helpers.get_date_range()
 
     u = User.query.get_or_404(id)
 
-    data = Routine.to_collection_dict(u.routines, page, per_page, 'api.get_routines')
+    query = helpers.helper_date(u.routines, Routine, start, end)
 
+    data = Session.to_collection_dict(query, page, per_page, 'api.get_routines')
     return jsonify(data)
 
 @bp.route('/users/<int:id>/sessions', methods=['GET'])
 @token_auth.login_required
 def get_user_sessions(id):
-    page = request.args.get('page', 1, type=int)
-    per_page = min(request.args.get('per_page', 10, type=int), 100)
+    page, per_page = helpers.get_pagination()
+    start, end = helpers.get_date_range()
 
     u = User.query.get_or_404(id)
 
-    data = Session.to_collection_dict(u.sessions, page, per_page, 'api.get_sessions')
+    query = helpers.helper_date(u.sessions, Session, start, end)
+
+    data = Session.to_collection_dict(query, page, per_page, 'api.get_sessions')
 
     return jsonify(data)
 
 @bp.route('/users/<int:id>/exercises', methods=['GET'])
 def get_user_exercises(id):
-    page = request.args.get('page', 1, type=int)
-    per_page = min(request.args.get('per_page', 10, type=int), 100)
+    page, per_page = helpers.get_pagination()
+    start, end = helpers.get_date_range()
 
-    ex_list = db.session.query(Exercise).filter(Exercise.session_id == Session.id).filter(Session.user_id == id).filter(Exercise.exercise_def_id == ExerciseDef.id).groupby(ExerciseDef.id)
-
-    data = Exercise.to_collection_dict(ex_list, page, per_page, 'api.get_exercises')
+    ex_list = db.session.query(Exercise).filter(Exercise.session_id == Session.id).filter(Session.user_id == id).filter(Exercise.exercise_def_id == ExerciseDef.id)
+    query = helpers.helper_date(ex_list, Exercise, start, end)
+    data = Exercise.to_collection_dict(query, page, per_page, 'api.get_exercises')
     print(len(ex_list.all()))
     #data['data'] = 
 
@@ -125,13 +130,14 @@ def get_user_exercises(id):
 def get_user_exercise_data(id):
 
     exercise = request.args.get("exercise")
-    if exercise:
-        if not ExerciseDef.query.filter_by(name=exercise).first():
-            return bad_request("Provided exercise doesn't exist")
-        data = db.session.query(ExerciseDef.name, db.func.count(distinct(Exercise.id)), db.func.sum(Set.weight), db.func.sum(Set.reps)).filter(Exercise.session_id == Session.id).filter(Session.user_id == id).filter(Exercise.exercise_def_id == ExerciseDef.id).filter(Set.exercise_id == Exercise.id).filter(ExerciseDef.name == exercise).all()
-    else:    
-        data = db.session.query(ExerciseDef.name, db.func.count(distinct(Exercise.id)), db.func.sum(Set.weight), db.func.sum(Set.reps)).filter(Exercise.session_id == Session.id).filter(Session.user_id == id).filter(Exercise.exercise_def_id == ExerciseDef.id).filter(Set.exercise_id == Exercise.id).group_by(ExerciseDef.id).all()
-    #print(type(data))
+    start, end = helpers.get_date_range()
+
+    q = db.session.query(ExerciseDef.name, db.func.count(distinct(Exercise.id)), db.func.sum(Set.weight), db.func.sum(Set.reps)).filter(Exercise.session_id == Session.id).filter(Session.user_id == id).filter(Exercise.exercise_def_id == ExerciseDef.id).filter(Set.exercise_id == Exercise.id)
+    query = helpers.helper_date(q, Exercise, start, end)
+
+    if not (data := helpers.exerciseDef_query(query, exercise)):
+        return bad_request("Provided exercise doesn't exist")
+
     data_dict = {}
     for elem in data:
         tmp = {}

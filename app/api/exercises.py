@@ -10,10 +10,11 @@ from app.api import bp
 from app.api.errors import bad_request
 from app.api.auth import token_auth
 from app.model_schemas import ExerciseSchema
-from app.models import Exercise
+from app.models import Exercise, Set
 from app import db
 from datetime import datetime
-from app.api.query_helpers import *
+import app.api.helpers as helpers
+import decorators
 
 exerciseSchema = ExerciseSchema()
 
@@ -26,11 +27,12 @@ def get_exercise(id):
 @bp.route('/exercises', methods=['GET'])
 @token_auth.login_required
 def get_exercises():
-    page = request.args.get('page', 1, type=int)
-    per_page = min(request.args.get('per_page', 10, type=int), 100)
-    start = request.args.get('from', datetime.min, type=datetime)
-    end = request.args.get('to', datetime.utcnow(), type=datetime)
-    data = Exercise.to_collection_dict(helper_date(Exercise.query, Exercise, start=start, end=end), page, per_page, 'api.get_exercises')
+    page, per_page = helpers.get_pagination()
+    start, end = helpers.get_date_range()
+
+    query = helpers.helper_date(Exercise.query, Exercise, start, end)
+
+    data = Exercise.to_collection_dict(query, page, per_page, 'api.get_exercises')
 
     return jsonify(data)
 
@@ -88,10 +90,12 @@ def delete_exercise(id):
 @bp.route('/exercises/<int:id>/sets', methods=['GET'])
 @token_auth.login_required
 def get_exercise_sets(id):
-    page = request.args.get('page', 1, type=int)
-    per_page = min(request.args.get('per_page', 10, type=int), 100)
+    page, per_page = helpers.get_pagination(1, 10)
+    start, end = helpers.get_date_range()
 
     ex = Exercise.query.get_or_404(id)
-    data = Exercise.to_collection_dict(helper_date(ex.sets), page, per_page, 'api.get_sets')
+    query = helpers.helper_date(ex.sets, Set, start, end)
+    
+    data = Exercise.to_collection_dict(query, page, per_page, 'api.get_sets')
 
     return data

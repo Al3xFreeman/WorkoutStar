@@ -14,8 +14,18 @@ import os
 class MetadataMixin(object):
     deleted = db.Column(db.Boolean, default=False)
     deleted_date = db.Column(db.DateTime)
-    created_at = db.Column(db.DateTime)
-    updated_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, index = True, default = datetime.utcnow)
+    updated_at = db.Column(db.DateTime, index = True, default = datetime.utcnow)
+
+    def to_dict(self):
+        data = {
+            "deleted": self.deleted,
+            "deleted_date": self.deleted_date if self.deleted  else None,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at
+        }
+
+        return data
 
 class PaginatedAPIMixin(object):
 
@@ -137,6 +147,7 @@ class User(MetadataMixin, PaginatedAPIMixin, UserMixin, db.Model):
 
         if include_email:
             data['email'] = self.email
+        data.update(super().to_dict())
 
         return data
 
@@ -177,7 +188,8 @@ class Routine(MetadataMixin, PaginatedAPIMixin, db.Model):
                 'user': url_for('api.get_user', id=self.user_id)
             }
         }
-    
+        data.update(super().to_dict())
+
         return data
 
     def from_dict(self, data):
@@ -210,7 +222,7 @@ class Workout(MetadataMixin, PaginatedAPIMixin, db.Model):
                 'sessions' : url_for('api.get_workout_sessions', id=self.id)
             }
         }
-
+        data.update(super().to_dict())
         return data
 
     def from_dict(self, data):
@@ -257,7 +269,8 @@ class ExerciseDef(MetadataMixin, PaginatedAPIMixin, db.Model):
                 'exercises': url_for('api.get_exerciseDef_exercises', id=self.id)
             }
         }
-    
+        data.update(super().to_dict())
+
         return data
 
     def from_dict(self, data):
@@ -288,7 +301,8 @@ class Session(MetadataMixin, PaginatedAPIMixin, db.Model):
                 'exercises': url_for('api.get_session_exercises', id=self.id)
             }
         }
-    
+        data.update(super().to_dict())
+
         return data
 
     def from_dict(self, data):
@@ -304,7 +318,7 @@ class Exercise(MetadataMixin, PaginatedAPIMixin, db.Model):
     name = db.Column(db.String(128))
     done = db.Column(db.Boolean)
     duration = db.Column(db.Integer)
-    timestamp = db.Column(db.DateTime, index = True, default = datetime.utcnow)
+    #timestamp = db.Column(db.DateTime, index = True, default = datetime.utcnow)
     sets = db.relationship('Set', backref='exercise', lazy='dynamic')
 
     exercise_def_id = db.Column(db.Integer, db.ForeignKey('exercise_def.id'))
@@ -320,7 +334,7 @@ class Exercise(MetadataMixin, PaginatedAPIMixin, db.Model):
             'name' : self.name,
             'done' : self.done,
             'duration' : self.duration,
-            'timestamp' : self.timestamp,
+            #'created_at' : self.created_at,
             'number_of_sets': self.sets.count(),
             'total_stats': self.sets_info(),
             'exercise_name': self.exercise_def.name,
@@ -332,7 +346,8 @@ class Exercise(MetadataMixin, PaginatedAPIMixin, db.Model):
                 'sets':url_for('api.get_exercise_sets', id=self.id)
             }
         }
-    
+        data.update(super().to_dict())
+
         return data
 
     def from_dict(self, data):
@@ -382,7 +397,8 @@ class Set(MetadataMixin, PaginatedAPIMixin, db.Model):
                 'exercise': url_for('api.get_exercise', id=self.exercise_id)
             }
         }
-    
+        data.update(super().to_dict())
+
         return data
 
     def from_dict(self, data):

@@ -30,6 +30,9 @@ class Regenerate(object):
             u = User(username = username, email=email)
             u.set_password(self.base_password)
 
+            random_offset = random.randint(0, 365)
+            u.created_at = datetime.utcnow() - timedelta(days=random_offset)
+
             db.session.add(u)
             db.session.commit()
 
@@ -42,7 +45,10 @@ class Regenerate(object):
             routine = Routine(period=random.randint(7,30))
 
             u.routines.append(routine)
-            
+
+            random_offset = random.randint(0, 365)
+            routine.created_at = datetime.utcnow() - timedelta(days=random_offset)
+
             db.session.add(routine)
             db.session.commit()
             print(self.base_username.format(mock_user_id) + " has Routine ID:" + str(routine.id))
@@ -57,6 +63,9 @@ class Regenerate(object):
             workout = Workout(due_date=date, name="Test Workout {}".format(i))
 
             r.workouts.append(workout)
+
+            random_offset = random.randint(0, 365)
+            r.created_at = datetime.utcnow() - timedelta(days=random_offset)
 
             db.session.add(workout)
             db.session.commit()
@@ -84,6 +93,9 @@ class Regenerate(object):
 
                 u.sessions.append(session)
 
+            random_offset = random.randint(0, 365)
+            session.created_at = datetime.utcnow() - timedelta(days=random_offset)
+
             db.session.add(session)
             db.session.commit()
 
@@ -99,6 +111,10 @@ class Regenerate(object):
         self.number_exerciseDef = min_amount
         for i in range(min_amount):
             exDef = ExerciseDef(name=self.ex_names[i])
+
+            random_offset = random.randint(0, 365)
+            exDef.created_at = datetime.utcnow() - timedelta(days=random_offset)
+
             db.session.add(exDef)
             db.session.commit()
 
@@ -113,7 +129,10 @@ class Regenerate(object):
             exercise_done = random.randint(0,1)
             s = Session.query.get(session_id)
             e_def = ExerciseDef.query.get(exerciseDef_id)
-            exercise = Exercise(name="test", done=exercise_done, session=s, exercise_def=e_def, timestamp=datetime.utcnow(), duration=random.randint(0,60))
+            exercise = Exercise(name="test", done=exercise_done, session=s, exercise_def=e_def, duration=random.randint(0,60))
+
+            random_offset = random.randint(0, 365)
+            exercise.created_at = datetime.utcnow() - timedelta(days=random_offset)
 
             db.session.add(exercise)
             db.session.commit()
@@ -129,6 +148,9 @@ class Regenerate(object):
             weight = random.randint(1,50)
             reps = random.randint(3,15)
             set = Set(weight=weight, reps=reps, exercise=e)
+
+            random_offset = random.randint(0, 365)
+            set.created_at = datetime.utcnow() - timedelta(days=random_offset)
 
             db.session.add(set)
             db.session.commit()

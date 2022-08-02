@@ -7,6 +7,7 @@ from flask import jsonify, request, url_for
 from app.model_schemas import RoutineSchema
 from datetime import datetime
 from app.api.workouts import get_workout_exercises_data
+import app.api.helpers as helpers
 
 routineSchema = RoutineSchema()
 
@@ -20,10 +21,11 @@ def get_routine(id):
 @bp.route('/routines', methods=['GET'])
 @token_auth.login_required
 def get_routines():
-    page = request.args.get('page', 1, type=int)
-    per_page = min(request.args.get('per_page', 10, type=int), 100)
-
-    data = Routine.to_collection_dict(Routine.query, page, per_page, 'api.get_routines')
+    page, per_page = helpers.get_pagination()
+    start, end = helpers.get_date_range()
+    query = helpers.helper_date(Routine.query , Routine, start, end)
+    
+    data = Routine.to_collection_dict(query, page, per_page, 'api.get_routines')
 
     return jsonify(data)
 
@@ -107,17 +109,19 @@ def remove_routine_session(routine_id, session_id):
 @bp.route('/routines/<int:id>/workouts', methods=['GET'])
 @token_auth.login_required
 def get_routine_workouts(id):
-    page = request.args.get('page', 1, type=int)
-    per_page = min(request.args.get('per_page', 10, type=int), 100)
+    page, per_page = helpers.get_pagination()
+    start, end = helpers.get_date_range()
 
     r = Routine.query.get_or_404(id)
 
-    data = Workout.to_collection_dict(r.workouts, page, per_page, 'api.get_workouts')
+    query = helpers.helper_date(r.workouts , Workout, start, end)
+    
+    data = Routine.to_collection_dict(query, page, per_page, 'api.get_workouts')
 
     return jsonify(data)
 
 
-@bp.route('/routines/<int:id>/extended')
+@bp.route('/routines/<int:id>/extended', methods=['GET'])
 def get_routine_info_extended(id):
     routine = Routine.query.get_or_404(id)
 

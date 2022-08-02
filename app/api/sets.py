@@ -5,7 +5,8 @@ from app.api.auth import token_auth
 from app import db
 from app.models import Set
 from app.model_schemas import SetSchema
-from datetime import datetime
+from datetime import datetime, timedelta
+import app.api.helpers as helpers
 
 setSchema = SetSchema()
 
@@ -19,10 +20,11 @@ def get_set(id):
 @bp.route('/sets', methods=['GET'])
 @token_auth.login_required
 def get_sets():
-    page = request.args.get('page', 1, type=int)
-    per_page = min(request.args.get('per_page', 10, type=int), 100)
-
-    data = Set.to_collection_dict(Set.query, page, per_page, 'api.get_sets')
+    page, per_page = helpers.get_pagination()
+    start, end = helpers.get_date_range()
+    query = helpers.helper_date(Set.query , Set, start, end)
+    
+    data = Set.to_collection_dict(query, page, per_page, 'api.get_sets')
 
     return jsonify(data)
 
