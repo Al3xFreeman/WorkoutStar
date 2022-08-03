@@ -17,6 +17,16 @@ class MetadataMixin(object):
     created_at = db.Column(db.DateTime, index = True, default = datetime.utcnow)
     updated_at = db.Column(db.DateTime, index = True, default = datetime.utcnow)
 
+    def delete(self):
+        self.deleted = True
+        self.deleted_date = datetime.utcnow()
+        db.session.commit()
+    
+    def recover(self):
+        self.deleted = False
+        self.deleted_date = None
+        db.session.commit()
+
     def to_dict(self):
         data = {
             "deleted": self.deleted,
