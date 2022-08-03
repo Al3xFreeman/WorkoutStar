@@ -17,7 +17,7 @@ userUpdateSchema = UserUpdateSchema()
 @bp.route('/users/<int:id>', methods=['GET'])
 @token_auth.login_required
 def get_user(id):
-    return jsonify(users_controller.get_user(id, to_dict=True))
+    return jsonify(users_controller.get_user(id, to_dict=True, show_deleted=False, **request.args))
 
 @bp.route('/users', methods=['GET'])
 @token_auth.login_required
