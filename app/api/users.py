@@ -17,17 +17,20 @@ userUpdateSchema = UserUpdateSchema()
 @bp.route('/users/<int:id>', methods=['GET'])
 @token_auth.login_required
 def get_user(id):
-    return jsonify(users_controller.get_user(id, to_dict=True, show_deleted=False, **request.args))
+    print(request.args)
+    return jsonify(users_controller.get_user(id, **request.args))
 
 @bp.route('/users', methods=['GET'])
 @token_auth.login_required
 def get_users():
-    page, per_page = helpers.get_pagination()
+    """page, per_page = helpers.get_pagination()
     start, end = helpers.get_date_range()
 
     query = helpers.helper_date(User.query, User, start, end)
 
     data = Session.to_collection_dict(query, page, per_page, 'api.get_users')
+    return jsonify(data)"""
+    data = users_controller.get_user_collection('api.get_users', **request.args)
     return jsonify(data)
 
 @bp.route('/users', methods=['POST'])

@@ -1,5 +1,8 @@
 from datetime import datetime, timedelta
 
+from app.models import PaginatedAPIMixin
+import app.api.helpers as helpers
+
 def daterange(func):
 
     def wrap_filter_by_date(query, cls, start = datetime.min, end = datetime.utcnow()):
@@ -13,68 +16,78 @@ def daterange(func):
 
 def show_deleted(func):
     def wrap_deleted(*args, **kwargs):
-        print("ENTER SHOW DELETED")
-        data = func(args, kwargs)
+        print("ENTER DELETED")
+        data = func(*args, **kwargs)
         if not hasattr(data, 'deleted'):
-            print("EXIT SHOW DELETED")
             return data
         
-        has_show_deleted = 'show_deleted' in kwargs
-        if has_show_deleted:
-            show_deleted = kwargs['show_deleted']
-
-            if not show_deleted and data.deleted:
-                print("EXIT SHOW DELETED")
-                return "Resource not available"
-            print("EXIT SHOW DELETED")
-            return data            
-
-        if data.deleted:
-            print("EXIT SHOW DELETED")
+        show_deleted = kwargs.get('show_deleted', False)
+        if not show_deleted and data.deleted:
+            print("EXIT DELETED")
             return "Resource not available"
-        print("EXIT SHOW DELETED")
-        return data
+
+        print("EXIT DELETED")
+        return data            
 
     return wrap_deleted
 
 def show_deleted_query(func):
     def wrap_deleted(*args, **kwargs):
-        data = func(args, kwargs)
-        
-        is_deleted = 'deleted' in kwargs
-        if is_deleted:
-            deleted = kwargs['deleted']
+        query = func(args, kwargs)
+        print(kwargs)
+
+        try:
+            show_deleted = kwargs.get('show_deleted', 'False')
+            show_deleted = show_deleted.lower() in ['true', 'True']
+
+            if not show_deleted:
+                return query.filter_by(deleted=False)
+
+            return query
+        except Exception:
+            return query
+
     return wrap_deleted
 
 
 def get_dict(func):
     def wrap_to_dict(*args, **kwargs):
-        print("ENTER GET DICT")
+        print("ENTER DICT")
         data = func(*args, **kwargs)
         if not hasattr(data, 'to_dict'):
-            print("EXIT GET DICT")
             return data
 
-        has_to_dict = 'to_dict' in kwargs
-        to_dict = kwargs['to_dict']
+        to_dict = kwargs.get('to_dict', True)
         #If data returned by func doesnt has 'to_dict' method
         # it the decorator will just return data silently, accompanied by the error
         try:
             if to_dict:
-                print("EXIT GET DICT")
+                print("EXIT DICT")
                 return data.to_dict()
 
         except AttributeError as err:
-            print("EXIT GET DICT")
             return data, err
-        print("EXIT GET DICT")
         return data
 
     return wrap_to_dict
 
 def get_collection_dict(func):
-    def wrap_collection_dict(*args, **kwargs):
-        data, to_d
+    def wrap_collection_dict(api, *args, **kwargs):
+        query = func(*args, **kwargs)
+        to_dict = kwargs.get('to_dict', 'True')
+        to_dict = to_dict.lower() in ['true', 'True', 'ahá']
+
+        page, per_page = helpers.get_pagination()
+        try:
+            if to_dict:
+                return PaginatedAPIMixin.to_collection_dict(query, page, per_page, api)
+        except Exception:
+            return query.all()
+
+        return query.all()
+    return wrap_collection_dict
+
+
 """
 def pagination(func):
     def wrap_pagination(*args, **kwargs):
