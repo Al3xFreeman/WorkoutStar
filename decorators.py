@@ -10,7 +10,22 @@ def daterange(func):
 
     return wrap_filter_by_date
 
+def get_dict(func):
+    def wrap_to_dict(*args, **kwargs):
+        data, to_dict = func(*args, **kwargs)
+        
+        #If data returned by func doesnt has 'to_dict' method
+        # it the decorator will just return data silently, accompanied by the error
+        try:
+            if to_dict:
+                return data.to_dict()
+                
+        except AttributeError as err:
+            return data, err
 
+        return data
+
+    return wrap_to_dict
 
 """
 def pagination(func):

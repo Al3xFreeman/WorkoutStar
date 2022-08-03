@@ -9,6 +9,7 @@ from app.model_schemas import UserCreationSchema, UserUpdateSchema
 from app.models import ExerciseDef, User, Routine, Session, Exercise, Set
 from flask import request, url_for
 from sqlalchemy import distinct
+from app.api.controllers import users_controller
 
 userCreationSchema = UserCreationSchema()
 userUpdateSchema = UserUpdateSchema()
@@ -16,7 +17,7 @@ userUpdateSchema = UserUpdateSchema()
 @bp.route('/users/<int:id>', methods=['GET'])
 @token_auth.login_required
 def get_user(id):
-    return jsonify(User.query.get_or_404(id).to_dict())
+    return jsonify(users_controller.get_user(id, to_dict=True))
 
 @bp.route('/users', methods=['GET'])
 @token_auth.login_required
