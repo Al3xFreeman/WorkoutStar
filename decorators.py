@@ -16,17 +16,14 @@ def daterange(func):
 
 def show_deleted(func):
     def wrap_deleted(*args, **kwargs):
-        print("ENTER DELETED")
         data = func(*args, **kwargs)
         if not hasattr(data, 'deleted'):
             return data
         
         show_deleted = kwargs.get('show_deleted', False)
         if not show_deleted and data.deleted:
-            print("EXIT DELETED")
             return "Resource not available"
 
-        print("EXIT DELETED")
         return data            
 
     return wrap_deleted
@@ -34,7 +31,6 @@ def show_deleted(func):
 def show_deleted_query(func):
     def wrap_deleted(*args, **kwargs):
         query = func(args, kwargs)
-        print(kwargs)
 
         try:
             show_deleted = kwargs.get('show_deleted', 'False')
@@ -52,7 +48,6 @@ def show_deleted_query(func):
 
 def get_dict(func):
     def wrap_to_dict(*args, **kwargs):
-        print("ENTER DICT")
         data = func(*args, **kwargs)
         if not hasattr(data, 'to_dict'):
             return data
@@ -62,7 +57,6 @@ def get_dict(func):
         # it the decorator will just return data silently, accompanied by the error
         try:
             if to_dict:
-                print("EXIT DICT")
                 return data.to_dict()
 
         except AttributeError as err:
