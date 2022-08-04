@@ -86,6 +86,7 @@ def get_collection_dict(func):
         return query.all()
     return wrap_collection_dict
 
+#TODO Improve origin of calls and log the time it took (maybe Monads?)
 tmp_dict_stats = {}
 def stats(func):
     @functools.wraps(func)
@@ -95,7 +96,9 @@ def stats(func):
         else:
             tmp_dict_stats[func.__name__] += 1
         
-        print("Function stats: ", tmp_dict_stats)        
+        print("Function stats: ", tmp_dict_stats)     
+        print(kwargs.get('origin', 'Unknown'))
+
         return func(*args, **kwargs)
     return wrap_stats
 

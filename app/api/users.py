@@ -39,10 +39,10 @@ def create_user():
     if errors:
         return bad_request(errors)
     try:
-        u = users_controller.create_user(data)
+        u = users_controller.create_user(data, origin='route')
     except Exception as ex:
         return bad_request(str(ex))
-    print(u)
+
     response = jsonify(u)
     response.status_code = 201
     response.headers['Location'] = url_for('api.get_user', id=u['id'])
