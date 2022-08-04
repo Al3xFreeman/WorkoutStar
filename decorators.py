@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from app.models import PaginatedAPIMixin
 import app.api.helpers as helpers
+import functools
 
 def daterange(func):
 
@@ -15,6 +16,7 @@ def daterange(func):
 
 
 def show_deleted(func):
+    @functools.wraps(func)
     def wrap_deleted(*args, **kwargs):
         data = func(*args, **kwargs)
         if not hasattr(data, 'deleted'):
@@ -29,6 +31,7 @@ def show_deleted(func):
     return wrap_deleted
 
 def show_deleted_query(func):
+    @functools.wraps(func)
     def wrap_deleted(*args, **kwargs):
         query = func(args, kwargs)
 
@@ -47,6 +50,7 @@ def show_deleted_query(func):
 
 
 def get_dict(func):
+    @functools.wraps(func)
     def wrap_to_dict(*args, **kwargs):
         data = func(*args, **kwargs)
         if not hasattr(data, 'to_dict'):
@@ -66,6 +70,7 @@ def get_dict(func):
     return wrap_to_dict
 
 def get_collection_dict(func):
+    @functools.wraps(func)
     def wrap_collection_dict(api, *args, **kwargs):
         query = func(*args, **kwargs)
         to_dict = kwargs.get('to_dict', 'True')
@@ -81,6 +86,18 @@ def get_collection_dict(func):
         return query.all()
     return wrap_collection_dict
 
+tmp_dict_stats = {}
+def stats(func):
+    @functools.wraps(func)
+    def wrap_stats(*args, **kwargs):
+        if func.__name__ not in tmp_dict_stats.keys():
+            tmp_dict_stats[func.__name__] = 1
+        else:
+            tmp_dict_stats[func.__name__] += 1
+        
+        print("Function stats: ", tmp_dict_stats)        
+        return func(*args, **kwargs)
+    return wrap_stats
 
 """
 def pagination(func):

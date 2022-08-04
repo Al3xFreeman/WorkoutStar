@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import json
 from app import db
 from app.api import bp, helpers
 from app.api.errors import bad_request
@@ -17,7 +16,6 @@ userUpdateSchema = UserUpdateSchema()
 @bp.route('/users/<int:id>', methods=['GET'])
 @token_auth.login_required
 def get_user(id):
-    print(request.args)
     return jsonify(users_controller.get_user(id, **request.args))
 
 @bp.route('/users', methods=['GET'])
@@ -40,14 +38,14 @@ def create_user():
     errors = userCreationSchema.validate(data)
     if errors:
         return bad_request(errors)
-
-    u = users_controller.create_user(data)
-    if type(u) is not User:
-        return bad_request(u)
-
+    try:
+        u = users_controller.create_user(data)
+    except Exception as ex:
+        return bad_request(str(ex))
+    print(u)
     response = jsonify(u)
     response.status_code = 201
-    response.headers['Location'] = url_for('api.get_user', id=u.id)
+    response.headers['Location'] = url_for('api.get_user', id=u['id'])
 
     return response
 
