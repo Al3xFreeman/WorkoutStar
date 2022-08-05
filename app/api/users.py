@@ -16,18 +16,16 @@ userUpdateSchema = UserUpdateSchema()
 @bp.route('/users/<int:id>', methods=['GET'])
 @token_auth.login_required
 def get_user(id):
-    return jsonify(users_controller.get_user(id, **request.args))
+    try:
+        return jsonify(users_controller.get_user(id, **request.args))
+    except Exception as ex:
+        return bad_request(str(ex))
+    
 
 @bp.route('/users', methods=['GET'])
 @token_auth.login_required
 def get_users():
-    """page, per_page = helpers.get_pagination()
-    start, end = helpers.get_date_range()
 
-    query = helpers.helper_date(User.query, User, start, end)
-
-    data = Session.to_collection_dict(query, page, per_page, 'api.get_users')
-    return jsonify(data)"""
     data = users_controller.get_user_collection('api.get_users', **request.args)
     return jsonify(data)
 
@@ -35,9 +33,7 @@ def get_users():
 def create_user():
 
     data = request.get_json() or {}
-    errors = userCreationSchema.validate(data)
-    if errors:
-        return bad_request(errors)
+
     try:
         u = users_controller.create_user(data, origin='route')
     except Exception as ex:
@@ -54,35 +50,34 @@ def create_user():
 def update_user(id):
     if token_auth.current_user().id != id:
         return bad_request("User you tried to modify isn't the one logged in!")
-
     data = request.get_json() or {}
-    errors = userUpdateSchema.validate(data)
-    if errors:
-        return bad_request(errors)
 
-
-    user = User.query.get_or_404(id)
+    try:
+        u = users_controller.update_user(id, data, show_deleted=True, origin='route')
+    except Exception as ex:
+        return bad_request(str(ex))
     
-    user.from_dict(data, new_user=False)
-
-    db.session.commit()
-    return jsonify(user.to_dict())
+    return jsonify(u)
 
 
 @bp.route('/users/<int:id>', methods=['DELETE'])
 @token_auth.login_required
 def delete_user(id):
-    u = User.query.get_or_404(id)
 
-    if(u.deleted):
-        return bad_request("User doesn't exists")
+    try:
+        u = users_controller.delete_user(id)
+        return jsonify(u)
+    except Exception as ex:
+        return bad_request(str(ex))
 
-    u.deleted = True
-    u.deleted_date = datetime.utcnow()
-
-    db.session.commit()
-
-    return jsonify(u.to_dict())
+@bp.route('/users/<int:id>/recover', methods=['PUT', 'PATCH'])
+@token_auth.login_required
+def recover_user(id):
+    try:
+        u = users_controller.recover_user(id)
+        return jsonify(u)
+    except Exception as ex:
+        return bad_request(str(ex))
 
     
 @bp.route('/users/<int:id>/routines', methods=['GET'])

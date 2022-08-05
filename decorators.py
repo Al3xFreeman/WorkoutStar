@@ -24,7 +24,7 @@ def show_deleted(func):
         
         show_deleted = kwargs.get('show_deleted', False)
         if not show_deleted and data.deleted:
-            return "Resource not available"
+            raise Exception("Resource not available")
 
         return data            
 
@@ -49,7 +49,7 @@ def show_deleted_query(func):
     return wrap_deleted
 
 
-def get_dict(func):
+def to_dict(func):
     @functools.wraps(func)
     def wrap_to_dict(*args, **kwargs):
         data = func(*args, **kwargs)
@@ -69,7 +69,7 @@ def get_dict(func):
 
     return wrap_to_dict
 
-def get_collection_dict(func):
+def to_collection_dict(func):
     @functools.wraps(func)
     def wrap_collection_dict(api, *args, **kwargs):
         query = func(*args, **kwargs)
