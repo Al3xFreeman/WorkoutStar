@@ -96,7 +96,7 @@ def get_user_routines(id):
 
     query = helpers.helper_date(u.routines, Routine, start, end)
 
-    data = Session.to_collection_dict(query, page, per_page, 'api.get_routines')
+    data = Session.to_collection_dict(query, page, per_page, 'api.get_user_routines', id=id)
     return jsonify(data)
 
 @bp.route('/users/<int:id>/sessions', methods=['GET'])
@@ -109,7 +109,7 @@ def get_user_sessions(id):
 
     query = helpers.helper_date(u.sessions, Session, start, end)
 
-    data = Session.to_collection_dict(query, page, per_page, 'api.get_sessions')
+    data = Session.to_collection_dict(query, page, per_page, 'api.get_user_sessions', id=id)
 
     return jsonify(data)
 
@@ -120,7 +120,7 @@ def get_user_exercises(id):
 
     ex_list = db.session.query(Exercise).filter(Exercise.session_id == Session.id).filter(Session.user_id == id).filter(Exercise.exercise_def_id == ExerciseDef.id)
     query = helpers.helper_date(ex_list, Exercise, start, end)
-    data = Exercise.to_collection_dict(query, page, per_page, 'api.get_exercises')
+    data = Exercise.to_collection_dict(query, page, per_page, 'api.get_user_exercises', id=id)
     print(len(ex_list.all()))
     #data['data'] = 
 

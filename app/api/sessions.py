@@ -82,7 +82,7 @@ def get_session_exercises(id):
 
     query = helpers.helper_date(session.exercises , Exercise, start, end)
     
-    data = Exercise.to_collection_dict(query, page, per_page, 'api.get_exercises')
+    data = Exercise.to_collection_dict(query, page, per_page, 'api.get_session_exercises', id=id)
 
     return jsonify(data)
 

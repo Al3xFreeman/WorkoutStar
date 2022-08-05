@@ -116,7 +116,7 @@ def get_routine_workouts(id):
 
     query = helpers.helper_date(r.workouts , Workout, start, end)
     
-    data = Routine.to_collection_dict(query, page, per_page, 'api.get_workouts')
+    data = Routine.to_collection_dict(query, page, per_page, 'api.get_routine_workouts', id=id)
 
     return jsonify(data)
 

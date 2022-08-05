@@ -96,6 +96,6 @@ def get_exercise_sets(id):
     ex = Exercise.query.get_or_404(id)
     query = helpers.helper_date(ex.sets, Set, start, end)
     
-    data = Exercise.to_collection_dict(query, page, per_page, 'api.get_sets')
+    data = Exercise.to_collection_dict(query, page, per_page, 'api.get_exercise_sets', id=id)
 
     return data

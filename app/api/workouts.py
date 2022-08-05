@@ -27,7 +27,7 @@ def get_workout_sessions(id):
 
     query = helpers.helper_date(workout.sessions , Session, start, end)
     
-    data = Session.to_collection_dict(query, page, per_page, 'api.get_sessions')
+    data = Session.to_collection_dict(query, page, per_page, 'api.get_workout_sessions', id=id)
 
 
     return jsonify(data)
@@ -99,7 +99,7 @@ def get_workout_exercises(id):
     query_1 = db.session.query(Exercise).filter(Exercise.session_id == Session.id).filter(Workout.id == Session.workout_id).filter(Workout.id == id)
     query = helpers.helper_date(query_1, Exercise, start, end)
     
-    data = Exercise.to_collection_dict(query, page, per_page, 'api.get_exercises')
+    data = Exercise.to_collection_dict(query, page, per_page, 'api.get_workout_exercises', id=id)
 
     return jsonify(data)
     

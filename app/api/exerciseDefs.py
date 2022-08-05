@@ -88,6 +88,6 @@ def get_exerciseDef_exercises(id):
 
     query = helpers.helper_date(ex_def.exercises, Exercise, start, end)
     
-    data = ExerciseDef.to_collection_dict(query, page, per_page, 'api.get_exercises')
+    data = ExerciseDef.to_collection_dict(query, page, per_page, 'api.get_exerciseDef_exercises', id=id)
 
     return data
